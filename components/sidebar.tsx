@@ -9,8 +9,11 @@ import {
   BookOpen,
   FileText,
   UserCheck,
-  CreditCard
+  CreditCard,
+  LogOut
 } from 'lucide-react'
+import router from 'next/router'
+import { logout } from '@/hooks/auth.service'
 
 const menuItems = [
   {
@@ -53,6 +56,12 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname()
 
+    const handleLogout = async () => {
+      const res = await logout()
+  
+      router.push('/login')
+    }
+
   return (
     <aside className="w-16 bg-white border-r border-orange-200 flex flex-col items-center py-6 space-y-6">
       {/* Logo */}
@@ -81,6 +90,11 @@ export function Sidebar() {
           )
         })}
       </nav>
+      <button className="w-12 h-12 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-red-600 flex items-center justify-center transition-all"
+          onClick={() => handleLogout()}
+        >
+          <LogOut size={24} />
+        </button>
     </aside>
   )
 }

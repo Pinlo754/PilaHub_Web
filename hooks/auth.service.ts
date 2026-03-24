@@ -20,6 +20,8 @@ export async function login(payload: LoginPayload): Promise<AuthResult> {
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
         localStorage.setItem("id", data.account.accountId);
         localStorage.setItem("role", data.account.role);
+
+        api.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
       }
 
       if (data?.refreshToken) {

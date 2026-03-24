@@ -37,7 +37,7 @@ export default function VendorLogin() {
       } else if (role === 'ADMIN') {
         router.push('/')
       } else {
-        router.push('/') // fallback
+        router.push('/vendor/dashboard') // fallback
       }
     } else {
       console.error(res.error)

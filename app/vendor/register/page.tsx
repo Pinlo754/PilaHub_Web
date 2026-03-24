@@ -5,19 +5,21 @@ import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { register } from '@/hooks/auth.service'
+import { useRouter } from 'next/navigation'
 
 export default function VendorRegister() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
-    storeName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: '',
     agreeTerms: false,
   })
-
+  const router = useRouter()
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -26,9 +28,49 @@ export default function VendorRegister() {
     }))
   }
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async  (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!validate()) return
+
     console.log('Register with:', formData)
+    const res = await register(formData)
+
+    if(res) {
+      router.push('/vendor/dashboard')
+    }
+  }
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.email) {
+      newErrors.email = 'Email không được để trống'
+    }
+
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = 'Số điện thoại không được để trống'
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Mật khẩu không được để trống'
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu'
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Mật khẩu không khớp'
+    }
+
+    if (!formData.agreeTerms) {
+      newErrors.agreeTerms = 'Bạn phải đồng ý điều khoản'
+    }
+
+    setErrors(newErrors)
+
+    return Object.keys(newErrors).length === 0
   }
 
   return (
@@ -40,23 +82,11 @@ export default function VendorRegister() {
             P
           </div>
           <h1 className="text-3xl font-bold text-gray-900">PilaHub</h1>
-          <p className="text-gray-600 mt-2">Đăng ký kho bán hàng</p>
+          <p className="text-gray-600 mt-2">Đăng ký cửa hàng trên PilaHub</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleRegister} className="bg-white rounded-2xl shadow-lg p-8 space-y-4">
-          {/* Store Name */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Tên cửa hàng</label>
-            <Input
-              type="text"
-              name="storeName"
-              placeholder="Tên cửa hàng của bạn"
-              value={formData.storeName}
-              onChange={handleChange}
-              className="border-2 border-gray-200 hover:border-orange-200 focus:border-orange-500"
-            />
-          </div>
 
           {/* Email */}
           <div className="space-y-2">
@@ -69,6 +99,9 @@ export default function VendorRegister() {
               onChange={handleChange}
               className="border-2 border-gray-200 hover:border-orange-200 focus:border-orange-500"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
           </div>
 
           {/* Phone */}
@@ -76,12 +109,15 @@ export default function VendorRegister() {
             <label className="block text-sm font-medium text-gray-700">Số điện thoại</label>
             <Input
               type="tel"
-              name="phone"
+              name="phoneNumber"
               placeholder="0123456789"
-              value={formData.phone}
+              value={formData.phoneNumber}
               onChange={handleChange}
               className="border-2 border-gray-200 hover:border-orange-200 focus:border-orange-500"
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -126,6 +162,9 @@ export default function VendorRegister() {
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+            )}
           </div>
 
           {/* Terms */}
@@ -148,6 +187,9 @@ export default function VendorRegister() {
               </Link>
             </span>
           </label>
+          {errors.agreeTerms && (
+            <p className="text-red-500 text-sm">{errors.agreeTerms}</p>
+          )}
 
           {/* Submit Button */}
           <Button
