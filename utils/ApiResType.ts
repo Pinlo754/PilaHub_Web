@@ -5,3 +5,11 @@ export type ApiResponse<T> = {
   errorCode: string | null;
   timestamp: number;
 };
+
+export type PageResponse<T> = {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+};

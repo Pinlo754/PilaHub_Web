@@ -1,14 +1,14 @@
 import { ApiResponse } from "@/utils/ApiResType";
 import api from "./AxiosInstance";
+import { OrderType } from "@/utils/OrderType";
 
 export const OrderService = {
   async getMyOrders(id: string): Promise<ApiResponse<any[]>> {
     try {
       const res = await api.get(`/orders/vendor/my-orders`);
-      console.log('Orders:')
+      console.log("Orders:");
       console.log(res.data.data);
       return res.data;
-
     } catch (e: any) {
       return {
         success: false,
@@ -68,7 +68,7 @@ export const OrderService = {
     }
   },
 
-   async createShipment(id: string): Promise<ApiResponse<any>> {
+  async createShipment(id: string): Promise<ApiResponse<any>> {
     try {
       const res = await api.post(`/shipments/order/${id}/create`);
 
@@ -82,5 +82,39 @@ export const OrderService = {
         timestamp: Date.now(),
       };
     }
+  },
+
+  // GET BY VENDOR_ID
+  getByVendorId: async (vendorId: string): Promise<OrderType[]> => {
+    const res = await api.get<ApiResponse<OrderType[]>>(
+      `/orders/admin/vendors/${vendorId}/orders`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // PAYOUT FOR VENDOR
+  payoutForVendor: async (orderId: string): Promise<string> => {
+    const res = await api.post<ApiResponse<string>>(
+      `/orders/${orderId}/vendor-payout`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.message;
   },
 };
