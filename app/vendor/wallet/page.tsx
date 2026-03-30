@@ -156,7 +156,7 @@ export default function VendorWallet() {
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <Button
                 onClick={() => setShowDepositModal(true)}
@@ -174,14 +174,7 @@ export default function VendorWallet() {
                 Rút tiền
               </Button>
 
-              <Button
-                onClick={() => setShowTransferModal(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center gap-2 py-6"
-              >
-                <Send size={20} />
-                Chuyển tiền
-              </Button>
-
+             
             </div>
 
             {/* Transaction History */}

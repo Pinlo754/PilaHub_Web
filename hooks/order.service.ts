@@ -20,6 +20,22 @@ export const OrderService = {
     }
   },
 
+  async getAllOrders(): Promise<ApiResponse<any[]>> {
+    try {
+      const res = await api.get(`/orders`);
+      return res.data;
+
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
   async getOrderById(id: string): Promise<ApiResponse<any>> {
     try {
       const res = await api.get(`/orders/${id}`);
@@ -68,9 +84,30 @@ export const OrderService = {
     }
   },
 
-   async createShipment(id: string): Promise<ApiResponse<any>> {
+  async createShipment(id: string): Promise<ApiResponse<any>> {
     try {
       const res = await api.post(`/shipments/order/${id}/create`);
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+  async updateShipment(id: string, status: string): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.put(`/shipments/${id}/status`, null, {
+        params: {
+          id: id,
+          status: status,
+        },
+      });
 
       return res.data;
     } catch (e: any) {

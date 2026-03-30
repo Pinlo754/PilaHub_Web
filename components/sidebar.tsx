@@ -12,8 +12,8 @@ import {
   CreditCard,
   LogOut
 } from 'lucide-react'
-import router from 'next/router'
 import { logout } from '@/hooks/auth.service'
+import { useRouter } from 'next/navigation'
 
 const menuItems = [
   {
@@ -38,8 +38,8 @@ const menuItems = [
   },
   {
     icon: FileText,
-    label: 'Đơn hàng',
-    href: '/orders',
+    label: 'Giả lập GHN',
+    href: '/ghn',
   },
   {
     icon: UserCheck,
@@ -55,6 +55,7 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter();
 
     const handleLogout = async () => {
       const res = await logout()

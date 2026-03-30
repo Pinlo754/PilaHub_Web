@@ -132,7 +132,7 @@ export default function ProductDetailPage() {
                   <p className="text-sm text-orange-600 mb-1">Đánh giá</p>
                   <div className="flex items-center gap-2">
                     <span className="text-yellow-500 text-lg">★★★★☆</span>
-                    <span className="text-orange-900 font-semibold">{product.avgRating.toFixed(1)}/5</span>
+                    <span className="text-orange-900 font-semibold">{product.avgRating?.toFixed(1)}/5</span>
                     <span className="text-orange-600">({product.reviewCount} đánh giá)</span>
                   </div>
                 </div>

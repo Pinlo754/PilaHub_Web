@@ -37,10 +37,7 @@ export async function login(payload: LoginPayload): Promise<AuthResult> {
 }
 
 export async function logout(): Promise<void> {
-  try {
-    await api.post("/auth/logout");
-  } catch {}
-
+  
   if (typeof window !== "undefined") {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
