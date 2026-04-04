@@ -133,7 +133,7 @@ export const OrderService = {
 
     return res.data.message;
   },
-};
+  
   async updateShipment(id: string, status: string): Promise<ApiResponse<any>> {
     try {
       const res = await api.put(`/shipments/${id}/status`, null, {
