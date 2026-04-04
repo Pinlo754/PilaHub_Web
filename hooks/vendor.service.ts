@@ -1,5 +1,5 @@
-import { ApiResponse } from "@/utils/ApiResType";
 import api from "./AxiosInstance";
+import { ApiResponse } from "@/utils/ApiResType";
 
 export interface Vendor {
   businessName: string
@@ -12,6 +12,22 @@ export interface Vendor {
 }
 
 export const VendorService = {
+  
+  getAll: async (): Promise<Vendor[]> => {
+    const res = await api.get<ApiResponse<Vendor[]>>(`/vendors`);
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+    
+    
   async getVendorById(id: string): Promise<ApiResponse<Vendor>> {
     try {
       const res = await api.get(`/vendors/${id}`)
@@ -55,6 +71,22 @@ export const VendorService = {
         timestamp: Date.now(),
       }
     }
+  },
+  
+  verifyVendor: async (vendorId: string): Promise<Vendor> => {
+    const res = await api.patch<ApiResponse<Vendor>>(
+      `/vendors/${vendorId}/verify`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
   },
 
 
