@@ -17,6 +17,7 @@ import {
 } from 'recharts'
 import { ShoppingCart, Package, RotateCcw, TrendingUp } from 'lucide-react'
 import { DashboardService } from '@/hooks/dashboard.service'
+import { useRouter } from 'next/navigation'
 
 export default function VendorDashboard() {
   const [dashboard, setDashboard] = useState<any>(null)
@@ -29,6 +30,18 @@ export default function VendorDashboard() {
   // applied (chỉ dùng để call API)
   const [appliedStartDate, setAppliedStartDate] = useState('2026-01-01')
   const [appliedEndDate, setAppliedEndDate] = useState('2026-03-17')
+  const router = useRouter()
+  useEffect(() => {
+    const role =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('role')
+        : null
+
+    if (role == 'TRAINEE') {
+        router.push('/vendor/register-vendor')
+    }
+  }, [])
+
 
   useEffect(() => {
     const fetchDashboard = async () => {

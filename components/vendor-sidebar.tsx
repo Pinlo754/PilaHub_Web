@@ -20,11 +20,11 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Tổng quan', href: '/vendor/dashboard' },
   { icon: Boxes, label: 'Kho hàng', href: '/vendor/inventory' },
   { icon: Package, label: 'Sản phẩm', href: '/vendor/products' },
-  { icon: Package, label: 'Chất bổ sung', href: '/vendor/supplements' },
+  // { icon: Package, label: 'Chất bổ sung', href: '/vendor/supplements' },
   { icon: ShoppingCart, label: 'Đơn hàng', href: '/vendor/orders' },
   { icon: RotateCcw, label: 'Trả hàng', href: '/vendor/returns' },
   { icon: Wallet, label: 'Ví', href: '/vendor/wallet' },
-  { icon: MessageSquare, label: 'Nhắn tin', href: '/vendor/messages' },
+  // { icon: MessageSquare, label: 'Nhắn tin', href: '/vendor/messages' },
   { icon: User, label: 'Hồ sơ', href: '/vendor/profile' },
 ]
 

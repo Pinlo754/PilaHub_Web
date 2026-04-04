@@ -6,24 +6,83 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Upload, Edit2, Save, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Vendor, VendorService } from '@/hooks/vendor.service'
+import { useFirebaseUpload } from '@/hooks/useFirebaseUpload'
 
 export default function VendorProfile() {
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    storeName: 'Decathlon Official Store',
-    ownerName: 'Nguyễn Văn A',
-    email: 'abc@gmail.com',
-    phone: '0123456789',
-    address: 'Vinhomes Grand Park, Quận 9, TP. Thủ Đức',
-    businessLicenseNo: '0123456789',
-    taxNo: '0123456789',
-    description: 'Decathlon là thương hiệu thể thao hàng đầu thế giới...',
+  const [formData, setFormData] = useState<Vendor>({
+    businessName: '',
+    phoneNumber: '',
+    address: '',
+    city: '',
+    country: '',
+    logoUrl: '',
+    businessLicenseUrl: '',
   })
+  const [updateStatus, setUpdateStatus] = useState('')
+  const { uploadFile, uploadImage } = useFirebaseUpload()
+  useEffect(() => {
+
+    const vendorId =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('id')
+        : null
+
+    if (!vendorId) {
+      return
+    }
+
+    const fetchProfile = async () => {
+      const res = await VendorService.getVendorById(vendorId)
+
+      if (res) {
+        setFormData(res.data)
+      }
+    }
+
+    fetchProfile()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSave = async () => {
+    const vendorId =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('id')
+        : null
+
+    if (!vendorId) {
+      return
+    }
+
+    const res = await VendorService.updateVendor(vendorId, formData)
+
+    if (res) {
+      setUpdateStatus('Thành công')
+    }
+  }
+
+  const handleUploadLogo = async (file: File) => {
+    const url = await uploadFile(file, "vendor/logo")
+
+    setFormData(prev => ({
+      ...prev,
+      logoUrl: url
+    }))
+  }
+
+  const handleUploadLicense = async (file: File) => {
+    const url = await uploadFile(file, "vendor/license")
+
+    setFormData(prev => ({
+      ...prev,
+      businessLicenseUrl: url
+    }))
   }
 
   return (
@@ -57,63 +116,35 @@ export default function VendorProfile() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Tên cửa hàng</label>
                       <Input
-                        name="storeName"
-                        value={formData.storeName}
+                        name="businessName"
+                        value={formData.businessName}
                         onChange={handleChange}
                         disabled={!isEditing}
-                        className="border-2 border-gray-200"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        rows={4}
-                        className={`w-full px-3 py-2 border-2 rounded-lg ${isEditing ? 'border-gray-200' : 'border-gray-100 bg-gray-50'}`}
                       />
                     </div>
                   </div>
-                </Card>
-
-                {/* Owner Info */}
-                <Card className="border-2 border-orange-200 p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4">Thông tin chủ cửa hàng</h3>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
                       <Input
-                        name="ownerName"
-                        value={formData.ownerName}
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
                         onChange={handleChange}
                         disabled={!isEditing}
-                        className="border-2 border-gray-200"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <Input
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={!isEditing}
-                          className="border-2 border-gray-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                        <Input
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          disabled={!isEditing}
-                          className="border-2 border-gray-200"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quốc gia</label>
+                      <Input
+                        name="country"
+                        value={formData.country}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                      />
                     </div>
+                  </div>
+                  <div className="space-y-4">
+                    {/* Address */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
                       <Input
@@ -121,7 +152,17 @@ export default function VendorProfile() {
                         value={formData.address}
                         onChange={handleChange}
                         disabled={!isEditing}
-                        className="border-2 border-gray-200"
+                      />
+                    </div>
+
+                    {/* City */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Thành phố</label>
+                      <Input
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        disabled={!isEditing}
                       />
                     </div>
                   </div>
@@ -131,26 +172,23 @@ export default function VendorProfile() {
                 <Card className="border-2 border-orange-200 p-6">
                   <h3 className="font-semibold text-gray-900 mb-4">Thông tin kinh doanh</h3>
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Số giấy phép kinh doanh</label>
-                      <Input
-                        name="businessLicenseNo"
-                        value={formData.businessLicenseNo}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        className="border-2 border-gray-200"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
-                      <Input
-                        name="taxNo"
-                        value={formData.taxNo}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        className="border-2 border-gray-200"
-                      />
-                    </div>
+                    {formData.businessLicenseUrl ? (
+                      <div className="space-y-2">
+                        <iframe
+                          src={formData.businessLicenseUrl}
+                          className="w-full h-64 rounded-lg border"
+                        />
+                        <a
+                          href={formData.businessLicenseUrl}
+                          target="_blank"
+                          className="text-blue-500 text-sm"
+                        >
+                          Mở toàn màn hình
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-600 mt-1">Chưa tải lên</p>
+                    )}
                   </div>
                 </Card>
               </div>
@@ -161,13 +199,39 @@ export default function VendorProfile() {
                 <Card className="border-2 border-orange-200 p-6">
                   <h3 className="font-semibold text-gray-900 mb-4">Logo cửa hàng</h3>
                   <div className="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center mb-4">
-                    <span className="text-gray-500 text-4xl font-bold">D</span>
+                    {formData.logoUrl ? (
+                      <img
+                        src={formData.logoUrl}
+                        alt="logo"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <span className="text-gray-500 text-4xl font-bold">?</span>
+                    )}
                   </div>
                   {isEditing && (
-                    <Button className="w-full bg-orange-100 text-orange-600 hover:bg-orange-200 flex items-center justify-center gap-2">
-                      <Upload size={18} />
-                      Tải lên
-                    </Button>
+                    <label className="w-full">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+
+                          const url = await uploadFile(file, "vendor/logo")
+
+                          setFormData(prev => ({
+                            ...prev,
+                            logoUrl: url
+                          }))
+                        }}
+                      />
+                      <div className="w-full bg-orange-100 text-orange-600 hover:bg-orange-200 flex items-center justify-center gap-2 py-2 rounded-lg cursor-pointer">
+                        <Upload size={18} />
+                        Tải logo
+                      </div>
+                    </label>
                   )}
                 </Card>
 
@@ -176,23 +240,33 @@ export default function VendorProfile() {
                   <h3 className="font-semibold text-gray-900 mb-4">Giấy phép & Chứng chỉ</h3>
                   <div className="space-y-3">
                     <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                      <p className="text-sm font-semibold text-gray-900">Giấy phép kinh doanh</p>
-                      <p className="text-xs text-gray-600 mt-1">Chưa tải lên</p>
+                      <p className="text-sm font-semibold text-gray-900">PDF Giấy tờ</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {formData.businessLicenseUrl ? 'Đã tải lên' : 'Chưa tải lên'}
+                      </p>
                       {isEditing && (
-                        <Button className="w-full mt-2 bg-orange-100 text-orange-600 hover:bg-orange-200 text-sm py-1 flex items-center justify-center gap-2">
-                          <Upload size={16} />
-                          Tải PDF
-                        </Button>
-                      )}
-                    </div>
-                    <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                      <p className="text-sm font-semibold text-gray-900">Chứng chỉ sản phẩm</p>
-                      <p className="text-xs text-gray-600 mt-1">Chưa tải lên</p>
-                      {isEditing && (
-                        <Button className="w-full mt-2 bg-orange-100 text-orange-600 hover:bg-orange-200 text-sm py-1 flex items-center justify-center gap-2">
-                          <Upload size={16} />
-                          Tải PDF
-                        </Button>
+                        <label className="w-full mt-2">
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            hidden
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+
+                              const url = await uploadFile(file, "vendor/license")
+
+                              setFormData(prev => ({
+                                ...prev,
+                                businessLicenseUrl: url
+                              }))
+                            }}
+                          />
+                          <div className="w-full bg-orange-100 text-orange-600 hover:bg-orange-200 text-sm py-1 flex items-center justify-center gap-2 rounded-lg cursor-pointer">
+                            <Upload size={16} />
+                            Tải PDF
+                          </div>
+                        </label>
                       )}
                     </div>
                   </div>
@@ -201,7 +275,9 @@ export default function VendorProfile() {
                 {/* Action Buttons */}
                 {isEditing && (
                   <div className="space-y-2">
-                    <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center gap-2 py-3">
+                    <Button
+                      onClick={handleSave}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center gap-2 py-3">
                       <Save size={18} />
                       Lưu thay đổi
                     </Button>

@@ -10,7 +10,10 @@ import {
   FileText,
   UserCheck,
   CreditCard,
-} from "lucide-react";
+  LogOut
+} from 'lucide-react'
+import { logout } from '@/hooks/auth.service'
+import { useRouter } from 'next/navigation'
 
 const menuItems = [
   {
@@ -41,7 +44,12 @@ const menuItems = [
   {
     icon: FileText,
     label: "Đơn hàng",
-    href: "/orders",
+    href: "/orders",    
+  },
+  {
+    icon: FileText,
+    label: 'Giả lập GHN',
+    href: '/ghn',
   },
   // {
   //   icon: UserCheck,
@@ -56,7 +64,14 @@ const menuItems = [
 ];
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname()
+  const router = useRouter();
+
+    const handleLogout = async () => {
+      const res = await logout()
+  
+      router.push('/login')
+    }
 
   return (
     <aside className="w-16 bg-white border-r border-orange-200 flex flex-col items-center py-6 space-y-6">
@@ -89,6 +104,11 @@ export function Sidebar() {
           );
         })}
       </nav>
+      <button className="w-12 h-12 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-red-600 flex items-center justify-center transition-all"
+          onClick={() => handleLogout()}
+        >
+          <LogOut size={24} />
+        </button>
     </aside>
   );
 }

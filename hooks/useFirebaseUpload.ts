@@ -81,6 +81,44 @@ export function useFirebaseUpload() {
     });
   };
 
+  const uploadFile = (
+    file: File,
+    folder: string = "uploads"
+  ): Promise<string> => {
+
+    return new Promise((resolve, reject) => {
+
+      const fileName = `${Date.now()}-${file.name}`
+      const storageRef = ref(storage, `${folder}/${fileName}`)
+
+      const uploadTask = uploadBytesResumable(storageRef, file)
+
+      setLoading(true)
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progressPercent =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+
+          setProgress(progressPercent)
+        },
+        (error) => {
+          setLoading(false)
+          reject(error)
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+
+          setUrl(downloadURL)
+          setLoading(false)
+
+          resolve(downloadURL)
+        }
+      )
+    })
+  }
+
   return {
     uploadImage,
     uploadFile,
