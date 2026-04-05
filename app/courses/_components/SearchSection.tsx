@@ -26,7 +26,7 @@ const SearchSection = ({ searchTerm, onChange, openDetailModal }: Props) => {
       {/* Filter */}
       <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
         <Funnel size={18} />
-        Filter
+        Lọc
       </button>
 
       {/* Create */}

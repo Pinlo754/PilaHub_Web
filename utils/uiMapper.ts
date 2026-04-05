@@ -6,6 +6,7 @@ import {
   ShipmentStatusType,
 } from "./OrderType";
 import { CategoryType, RegionCode } from "./ProductType";
+import { TransactionFlowType, TransactionTypeEnum } from "./TransactionType";
 
 // TYPE
 type MapType = {
@@ -225,6 +226,142 @@ export const REGION_LABEL: Record<RegionCode, string> = {
   HN: "Hà Nội",
 };
 
+export const TRANSACTION_TYPE_MAP: Record<TransactionTypeEnum, MapType> = {
+  WALLET_TOP_UP: {
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
+    label: "Nạp tiền",
+  },
+  WALLET_WITHDRAWAL: {
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
+    label: "Rút tiền",
+  },
+  SUBSCRIPTION_PACKAGE: {
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-700",
+    label: "Mua gói",
+  },
+  SUBSCRIPTION_PRORATION_REFUND: {
+    bgColor: "bg-purple-100",
+    textColor: "text-purple-700",
+    label: "Hoàn tiền gói",
+  },
+  SUBSCRIPTION_UPGRADE: {
+    bgColor: "bg-indigo-100",
+    textColor: "text-indigo-700",
+    label: "Nâng cấp gói",
+  },
+  REFUND: {
+    bgColor: "bg-pink-100",
+    textColor: "text-pink-700",
+    label: "Hoàn tiền",
+  },
+  PENALTY: {
+    bgColor: "bg-red-200",
+    textColor: "text-red-800",
+    label: "Phạt",
+  },
+  BOOKING_COACH: {
+    bgColor: "bg-cyan-100",
+    textColor: "text-cyan-700",
+    label: "Đặt HLV",
+  },
+  BOOKING_COACH_REFUND: {
+    bgColor: "bg-cyan-200",
+    textColor: "text-cyan-800",
+    label: "Hoàn tiền HLV",
+  },
+  ORDER: {
+    bgColor: "bg-yellow-100",
+    textColor: "text-yellow-700",
+    label: "Thanh toán đơn hàng",
+  },
+  VENDOR_PAYOUT: {
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-700",
+    label: "Thanh toán NCC",
+  },
+  PLATFORM_FEE: {
+    bgColor: "bg-gray-200",
+    textColor: "text-gray-700",
+    label: "Phí nền tảng",
+  },
+  SHIPPING_FEE_THIRD_PARTY: {
+    bgColor: "bg-orange-100",
+    textColor: "text-orange-700",
+    label: "Phí vận chuyển (3rd)",
+  },
+  SHIPPING_FEE_VENDOR: {
+    bgColor: "bg-orange-200",
+    textColor: "text-orange-800",
+    label: "Phí vận chuyển (NCC)",
+  },
+  VENDOR_EARNING: {
+    bgColor: "bg-green-200",
+    textColor: "text-green-800",
+    label: "Doanh thu NCC",
+  },
+  COURSE: {
+    bgColor: "bg-blue-200",
+    textColor: "text-blue-800",
+    label: "Khóa học",
+  },
+};
+
+export const TRANSACTION_FLOW_MAP: Record<
+  TransactionTypeEnum,
+  TransactionFlowType
+> = {
+  // Ví
+  WALLET_TOP_UP: "INCOME", 
+  WALLET_WITHDRAWAL: "EXPENSE", 
+
+  // Subscription
+  SUBSCRIPTION_PACKAGE: "INCOME", 
+  SUBSCRIPTION_PRORATION_REFUND: "EXPENSE", 
+  SUBSCRIPTION_UPGRADE: "INCOME", 
+
+  // Misc
+  REFUND: "EXPENSE", 
+  PENALTY: "INCOME", 
+
+  // Coach
+  BOOKING_COACH: "INCOME", 
+  BOOKING_COACH_REFUND: "EXPENSE", 
+
+  // Order
+  ORDER: "INCOME", 
+
+  // Vendor
+  VENDOR_PAYOUT: "EXPENSE", 
+  VENDOR_EARNING: "EXPENSE", 
+
+  // Phí
+  PLATFORM_FEE: "INCOME", 
+  SHIPPING_FEE_THIRD_PARTY: "EXPENSE", 
+  SHIPPING_FEE_VENDOR: "EXPENSE",
+
+  // Course
+  COURSE: "INCOME", 
+};
+
+export const TRANSACTION_FLOW_CONFIG: Record<
+  TransactionFlowType,
+  { bgColor: string; textColor: string; sign: string }
+> = {
+  INCOME: {
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
+    sign: "+",
+  },
+  EXPENSE: {
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
+    sign: "-",
+  },
+};
+
 // FUNCTION
 export const getAccountStatus = (emailVerified: boolean, active: boolean) => {
   if (!emailVerified) return "UNVERIFIED";
@@ -286,4 +423,16 @@ export const getRegionLabels = (regions?: string[] | null) => {
   if (!regions || regions.length === 0) return ["Toàn quốc"];
 
   return regions.map((r) => REGION_LABEL[r as keyof typeof REGION_LABEL] || r);
+};
+
+export const getTransactionTypeConfig = (type: TransactionTypeEnum) =>
+  TRANSACTION_TYPE_MAP[type];
+
+export const getTransactionFlow = (
+  type: TransactionTypeEnum,
+): TransactionFlowType => TRANSACTION_FLOW_MAP[type];
+
+export const getTransactionFlowConfig = (type: TransactionTypeEnum) => {
+  const flow = getTransactionFlow(type);
+  return TRANSACTION_FLOW_CONFIG[flow];
 };

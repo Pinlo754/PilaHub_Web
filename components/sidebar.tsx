@@ -10,10 +10,13 @@ import {
   FileText,
   UserCheck,
   CreditCard,
-  LogOut
-} from 'lucide-react'
-import { logout } from '@/hooks/auth.service'
-import { useRouter } from 'next/navigation'
+  LogOut,
+  Truck,
+  Store,
+  ScrollText,
+} from "lucide-react";
+import { logout } from "@/hooks/auth.service";
+import { useRouter } from "next/navigation";
 
 const menuItems = [
   {
@@ -27,7 +30,7 @@ const menuItems = [
     href: "/accounts",
   },
   {
-    icon: Package,
+    icon: Store,
     label: "Nhà cung cấp",
     href: "/suppliers",
   },
@@ -42,14 +45,14 @@ const menuItems = [
   //   href: "/exercises",
   // },
   {
-    icon: FileText,
+    icon: Package,
     label: "Đơn hàng",
-    href: "/orders",    
+    href: "/orders",
   },
   {
-    icon: FileText,
-    label: 'Giả lập GHN',
-    href: '/ghn',
+    icon: Truck,
+    label: "Giả lập GHN",
+    href: "/ghn",
   },
   // {
   //   icon: UserCheck,
@@ -61,17 +64,22 @@ const menuItems = [
     label: "Rút tiền",
     href: "/withdrawals",
   },
+  {
+    icon: ScrollText,
+    label: "Giao dịch",
+    href: "/transactions",
+  },
 ];
 
 export function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
   const router = useRouter();
 
-    const handleLogout = async () => {
-      const res = await logout()
-  
-      router.push('/login')
-    }
+  const handleLogout = async () => {
+    const res = await logout();
+
+    router.push("/login");
+  };
 
   return (
     <aside className="w-16 bg-white border-r border-orange-200 flex flex-col items-center py-6 space-y-6">
@@ -104,11 +112,12 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <button className="w-12 h-12 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-red-600 flex items-center justify-center transition-all"
-          onClick={() => handleLogout()}
-        >
-          <LogOut size={24} />
-        </button>
+      <button
+        className="w-12 h-12 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-red-600 flex items-center justify-center transition-all"
+        onClick={() => handleLogout()}
+      >
+        <LogOut size={24} />
+      </button>
     </aside>
   );
 }
