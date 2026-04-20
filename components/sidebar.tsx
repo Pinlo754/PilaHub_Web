@@ -116,11 +116,11 @@ const menuItems = [
     label: "Giao dịch",
     href: "/transactions",
   },
-  // {
-  //   icon: Bell,
-  //   label: "Thông báo",
-  //   href: "/notifications",
-  // },
+   {
+     icon: Bell,
+     label: "Thông báo",
+     href: "/notification",
+   },
   {
     icon: Settings,
     label: "Cấu hình hệ thống",
