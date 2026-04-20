@@ -10,7 +10,8 @@ import {
   FileText,
   UserCheck,
   CreditCard,
-  LogOut
+  LogOut,
+  Bell,
 } from 'lucide-react'
 import { logout } from '@/hooks/auth.service'
 import { useRouter } from 'next/navigation'
@@ -60,6 +61,11 @@ const menuItems = [
     icon: CreditCard,
     label: "Rút tiền",
     href: "/withdrawals",
+  },
+  {
+    icon: Bell,
+    label: "Thông báo",
+    href: "/notification",
   },
 ];
 
