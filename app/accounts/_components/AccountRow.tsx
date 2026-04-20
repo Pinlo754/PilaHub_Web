@@ -22,13 +22,14 @@ const AccountRow = ({
   const status = getAccountStatus(account.emailVerified, account.active);
   const config = ACCOUNT_STATUS_MAP[status];
   const role = ACCOUNT_ROLE_MAP[account.role];
+  const shortId = `${account.accountId.slice(0, 6)}...`;
 
   return (
     <tr
       onClick={() => onPressAccount(account)}
-      className="border-b border-orange-100 hover:bg-orange-50"
+      className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-700">{account.accountId}</td>
+      <td className="py-3 px-4 text-gray-500">{shortId}</td>
       <td className="py-3 px-4 text-gray-700">{account.email}</td>
       <td className="py-3 px-4 text-gray-700 text-center">
         {account.phoneNumber}

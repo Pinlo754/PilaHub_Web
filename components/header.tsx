@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { Bell, User, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Bell, User, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
-  title: string
+  title: string;
 }
 
 export function Header({ title }: HeaderProps) {
@@ -21,7 +21,7 @@ export function Header({ title }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-orange-50 rounded-lg px-4 py-2">
+          {/* <div className="flex items-center gap-2 bg-orange-50 rounded-lg px-4 py-2">
             <Calendar size={18} className="text-orange-600" />
             <input 
               type="date" 
@@ -34,17 +34,17 @@ export function Header({ title }: HeaderProps) {
               defaultValue="2025-12-01" 
               className="bg-transparent text-sm text-gray-700 border-none outline-none"
             />
-          </div>
+          </div> */}
 
-          <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-orange-50">
+          {/* <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-orange-50">
             <Bell size={20} />
           </Button>
           <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-orange-50">
             <User size={20} />
-          </Button>
+          </Button> */}
           <span className="text-sm font-medium text-orange-600">Admin</span>
         </div>
       </div>
     </header>
-  )
+  );
 }

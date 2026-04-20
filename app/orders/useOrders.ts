@@ -19,7 +19,7 @@ export const useOrders = () => {
   const fetchAll = async () => {
     setIsLoading(true);
     try {
-      const res = await OrderService.getByVendorId(VENDOR_ID);
+      const res = await OrderService.getAll();
       setOrders(res);
     } catch (err: any) {
       if (err?.type === "BUSINESS_ERROR") {

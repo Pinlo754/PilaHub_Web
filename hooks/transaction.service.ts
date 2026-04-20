@@ -62,4 +62,43 @@ export const TransactionService = {
 
     return res.data.data;
   },
+
+  // GET BY REFERENCE ID
+  getByReferenceId: async (referenceId: string): Promise<TransactionType[]> => {
+    const res = await api.get<ApiResponse<TransactionType[]>>(
+      `/transactions/by-reference/${referenceId}`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // GET BY TYPE
+  getByType: async (type: string): Promise<TransactionType[]> => {
+    const res = await api.get<ApiResponse<TransactionType[]>>(
+      `/transactions/by-type`,
+      {
+        params: {
+          type,
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
 };

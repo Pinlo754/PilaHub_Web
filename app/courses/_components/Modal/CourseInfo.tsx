@@ -164,7 +164,7 @@ const CourseInfo = forwardRef<CourseInfoRef, Props>(({ initialData }, ref) => {
           <div className="mt-4">
             <Label className="text-xs mb-2 block">Xem trước</Label>
             {preview ? (
-              <Card className="overflow-hidden border-2 border-dashed">
+              <Card className="overflow-hidden flex justify-center h-48 border-2 border-dashed">
                 <img
                   src={preview}
                   alt="Course preview"

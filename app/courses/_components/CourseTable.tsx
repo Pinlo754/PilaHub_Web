@@ -4,9 +4,16 @@ import CourseRow from "./CourseRow";
 type Props = {
   courses: CourseType[];
   onRowClick: (courseId: string) => void;
+  onToggleStatus: (courseId: string, currentActive: boolean) => void;
+  onDelete: (courseId: string, courseName: string) => void;
 };
 
-const CourseTable = ({ courses, onRowClick }: Props) => {
+const CourseTable = ({
+  courses,
+  onRowClick,
+  onDelete,
+  onToggleStatus,
+}: Props) => {
   return (
     <table className="w-full">
       <thead>
@@ -32,6 +39,9 @@ const CourseTable = ({ courses, onRowClick }: Props) => {
           <th className="text-center py-3 px-4 font-semibold text-orange-700">
             Trạng thái
           </th>
+          <th className="text-center py-3 px-4 font-semibold text-orange-700">
+            Hành động
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -41,6 +51,8 @@ const CourseTable = ({ courses, onRowClick }: Props) => {
               key={course.courseId}
               course={course}
               onRowClick={onRowClick}
+              onToggleStatus={onToggleStatus}
+              onDelete={onDelete}
             />
           );
         })}

@@ -72,6 +72,22 @@ export const VendorService = {
     }
   },
 
+  // GET BY ID
+  getById: async (vendorId: string): Promise<VendorType> => {
+    const res = await api.get<ApiResponse<VendorType>>(`/vendors/${vendorId}`);
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // VERIFY VENDOR
   verifyVendor: async (vendorId: string): Promise<VendorType> => {
     const res = await api.patch<ApiResponse<VendorType>>(
       `/vendors/${vendorId}/verify`,

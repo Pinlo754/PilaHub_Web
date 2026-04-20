@@ -1,22 +1,48 @@
 import { TransactionService } from "@/hooks/transaction.service";
-import { TransactionType } from "@/utils/TransactionType";
-import { getTransactionFlow } from "@/utils/uiMapper";
+import { AccountService } from "@/hooks/account.service";
+import { TransactionType, TransactionTypeEnum } from "@/utils/TransactionType";
+import { AccountType } from "@/utils/AccountType";
+import {
+  getTransactionFlow,
+  getTransactionCategory,
+  TransactionCategoryType,
+} from "@/utils/uiMapper";
 import { useEffect, useState } from "react";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 12;
 
 export const useTransactions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
+  const [accountMap, setAccountMap] = useState<Record<string, AccountType>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] =
+    useState<TransactionCategoryType>("ALL");
+  const [selectedType, setSelectedType] = useState<TransactionTypeEnum | "ALL">(
+    "ALL",
+  );
 
   const fetchAll = async () => {
     setIsLoading(true);
     try {
       const data = await TransactionService.getAll();
       setTransactions(data);
+
+      const uniqueAccountIds = [...new Set(data.map((t) => t.accountId))];
+      const newAccountMap: Record<string, AccountType> = {};
+
+      for (const accountId of uniqueAccountIds) {
+        try {
+          const account = await AccountService.getById(accountId);
+          newAccountMap[accountId] = account;
+        } catch (err) {
+          console.error(`Failed to fetch account ${accountId}:`, err);
+        }
+      }
+
+      setAccountMap(newAccountMap);
     } catch (err: any) {
       if (err?.type === "BUSINESS_ERROR") {
         setErrorMsg(err.message);
@@ -28,13 +54,27 @@ export const useTransactions = () => {
     }
   };
 
-  // FILTER
-  const filtered = transactions.filter((t) =>
+  // FILTER by search term (thêm referenceId)
+  const filteredBySearch = transactions.filter((t) =>
     [t.transactionId, t.transactionType, t.description, t.referenceId]
       .join(" ")
       .toLowerCase()
       .includes(searchTerm.toLowerCase()),
   );
+
+  // FILTER by category
+  const filteredByCategory =
+    selectedCategory === "ALL"
+      ? filteredBySearch
+      : filteredBySearch.filter(
+          (t) => getTransactionCategory(t.transactionType) === selectedCategory,
+        );
+
+  // FILTER by type
+  const filtered =
+    selectedType === "ALL"
+      ? filteredByCategory
+      : filteredByCategory.filter((t) => t.transactionType === selectedType);
 
   // STATS
   const totalIncome = filtered
@@ -69,7 +109,17 @@ export const useTransactions = () => {
     setCurrentPage(1);
   };
 
-  // USE EFFECT
+  const handleCategoryChange = (category: TransactionCategoryType) => {
+    setSelectedCategory(category);
+    setSelectedType("ALL"); // reset type khi đổi category
+    setCurrentPage(1);
+  };
+
+  const handleTypeChange = (type: TransactionTypeEnum | "ALL") => {
+    setSelectedType(type);
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     fetchAll();
   }, []);
@@ -85,5 +135,11 @@ export const useTransactions = () => {
     handlePageChange,
     paginated,
     stats,
+    accountMap,
+    selectedCategory,
+    setSelectedCategory: handleCategoryChange,
+    selectedType,
+    setSelectedType: handleTypeChange,
+    allTransactions: transactions,
   };
 };

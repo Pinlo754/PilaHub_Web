@@ -8,6 +8,10 @@ import Pagination from "./_components/Pagination";
 import SearchSection from "./_components/SearchSection";
 import { useAccounts } from "./useAccounts";
 import DetailModal from "./_components/DetailModal";
+import Tabs from "./_components/Tabs";
+import CreateModal from "./_components/CreateModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import Toast from "@/components/Toast";
 
 export default function AccountsPage() {
   // HOOK
@@ -30,6 +34,12 @@ export default function AccountsPage() {
     openCreateModal,
     showCreateModal,
     closeCreateModal,
+    createAccount,
+    confirmState,
+    isConfirmOpen,
+    closeConfirm,
+    toasts,
+    removeToast,
   } = useAccounts();
 
   return (
@@ -45,6 +55,9 @@ export default function AccountsPage() {
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
+            {/* Tabs */}
+            <Tabs activeKey="ACCOUNT" />
+
             {/* Search & Filter */}
             <SearchSection
               searchTerm={searchTerm}
@@ -82,6 +95,29 @@ export default function AccountsPage() {
           onSubmit={updateAccount}
         />
       )}
+
+      {/* Create Modal */}
+      <CreateModal
+        open={showCreateModal}
+        onOpenChange={(open) => !open && closeCreateModal()}
+        onSubmit={createAccount}
+      />
+
+      {/* Confirm Dialog */}
+      {confirmState && (
+        <ConfirmDialog
+          open={isConfirmOpen}
+          onOpenChange={(open) => !open && closeConfirm()}
+          title={confirmState.title}
+          description={confirmState.description}
+          confirmLabel={confirmState.confirmLabel}
+          variant={confirmState.variant}
+          onConfirm={confirmState.onConfirm}
+        />
+      )}
+
+      {/* Toast */}
+      <Toast toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import VendorTable from "./_components/VendorTable";
 import Pagination from "./_components/Pagination";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import VerifyModal from "./_components/VerifyModal";
+import Tabs from "../accounts/_components/Tabs";
 
 export default function SuppliersPage() {
   // HOOK
@@ -33,6 +34,9 @@ export default function SuppliersPage() {
         <Header title="Nhà cung cấp" />
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
+            {/* Tabs */}
+            <Tabs activeKey="VENDOR" />
+
             {/* Search and Filter */}
             <SearchSection searchTerm={searchTerm} onChange={setSearchTerm} />
 

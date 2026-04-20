@@ -9,13 +9,14 @@ type Props = {
 
 const VendorRow = ({ vendor, onPressVendor }: Props) => {
   const config = getVerifyConfig(vendor.verified);
+  const shortId = `${vendor.vendorId.slice(0, 6)}...`;
 
   return (
     <tr
       onClick={() => onPressVendor(vendor)}
-      className="border-b border-orange-100 hover:bg-orange-50"
+      className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-700">{vendor.vendorId}</td>
+      <td className="py-3 px-4 text-gray-500">{shortId}</td>
       <td className="py-3 px-4">
         <img
           src={vendor.logoUrl || "/default-logo.png"}

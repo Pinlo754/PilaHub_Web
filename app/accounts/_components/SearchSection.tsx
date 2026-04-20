@@ -30,13 +30,13 @@ const SearchSection = ({ searchTerm, onChange, openCreateModal }: Props) => {
       </button>
 
       {/* Create */}
-      {/* <button
+      <button
         onClick={openCreateModal}
         className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2"
       >
         <Plus size={18} />
-        Tạo tài khoản
-      </button> */}
+        Tạo tài khoản HLV
+      </button>
     </div>
   );
 };

@@ -8,16 +8,23 @@ import {
 
 type Props = {
   transaction: TransactionType;
+  accountName?: string;
+  onClick?: () => void;
 };
 
-const TransactionRow = ({ transaction }: Props) => {
+const TransactionRow = ({ transaction, accountName, onClick }: Props) => {
   const flowConfig = getTransactionFlowConfig(transaction.transactionType);
   const typeConfig = getTransactionTypeConfig(transaction.transactionType);
+  const shortId = `${transaction.transactionId.slice(0, 6)}...`;
 
   return (
-    <tr className="border-b border-orange-100 hover:bg-orange-50">
-      <td className="py-3 px-4 text-gray-500 text-sm font-mono">
-        {transaction.transactionId}
+    <tr
+      className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
+      onClick={onClick}
+    >
+      <td className="py-3 px-4 text-gray-500 ">{shortId}</td>
+      <td className="py-3 px-4 text-gray-700 max-w-[180px] truncate">
+        {accountName || "—"}
       </td>
       <td className="py-3 px-4">
         <span
@@ -32,9 +39,7 @@ const TransactionRow = ({ transaction }: Props) => {
       >
         {transaction.description || "—"}
       </td>
-      <td className="py-3 px-4 text-gray-500 text-sm font-mono">
-        {transaction.referenceId || "—"}
-      </td>
+
       <td
         className={`py-3 px-4 text-right font-semibold ${flowConfig.textColor}`}
       >

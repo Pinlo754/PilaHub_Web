@@ -24,7 +24,6 @@ export const OrderService = {
     try {
       const res = await api.get(`/orders`);
       return res.data;
-
     } catch (e: any) {
       return {
         success: false,
@@ -100,6 +99,21 @@ export const OrderService = {
     }
   },
 
+  // GET ALL
+  getAll: async (): Promise<OrderType[]> => {
+    const res = await api.get<ApiResponse<OrderType[]>>(`/orders`);
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // GET BY VENDOR_ID
   getByVendorId: async (vendorId: string): Promise<OrderType[]> => {
     const res = await api.get<ApiResponse<OrderType[]>>(
@@ -133,7 +147,7 @@ export const OrderService = {
 
     return res.data.message;
   },
-  
+
   async updateShipment(id: string, status: string): Promise<ApiResponse<any>> {
     try {
       const res = await api.put(`/shipments/${id}/status`, null, {
