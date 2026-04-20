@@ -1,8 +1,8 @@
 import { ApiResponse } from "@/utils/ApiResType";
 import api from "./AxiosInstance";
+import { TransactionType } from "@/utils/TransactionType";
 
 export const TransactionService = {
-
   async getMyTransactions(): Promise<ApiResponse<any[]>> {
     try {
       const res = await api.get(`/transactions/my-transactions`);
@@ -48,4 +48,57 @@ export const TransactionService = {
     }
   },
 
+  // GET ALL
+  getAll: async (): Promise<TransactionType[]> => {
+    const res = await api.get<ApiResponse<TransactionType[]>>(`/transactions`);
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // GET BY REFERENCE ID
+  getByReferenceId: async (referenceId: string): Promise<TransactionType[]> => {
+    const res = await api.get<ApiResponse<TransactionType[]>>(
+      `/transactions/by-reference/${referenceId}`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // GET BY TYPE
+  getByType: async (type: string): Promise<TransactionType[]> => {
+    const res = await api.get<ApiResponse<TransactionType[]>>(
+      `/transactions/by-type`,
+      {
+        params: {
+          type,
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
 };

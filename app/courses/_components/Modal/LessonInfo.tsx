@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import {
   StagedExercise,
   StagedLesson,
@@ -29,6 +29,11 @@ import LessonList from "./LessonList";
 
 export type LessonInfoRef = {
   getData: () => StagedLesson[];
+  /**
+   * Validate thứ tự liền mạch của tất cả lessons và exercises bên trong.
+   * Trả về null nếu hợp lệ, hoặc chuỗi lỗi nếu không hợp lệ.
+   */
+  validate: () => string | null;
 };
 
 type Props = {
@@ -37,7 +42,7 @@ type Props = {
 };
 
 type LessonFormData = {
-  name: string; // ✅ thêm name
+  name: string;
   displayOrder: string;
   notes: string;
 };
@@ -47,6 +52,13 @@ const DEFAULT_LESSON_FORM: LessonFormData = {
   displayOrder: "",
   notes: "",
 };
+
+/** Kiểm tra mảng số nguyên có liền mạch từ 1 không (1,2,3,...,n) */
+function isSequential(orders: number[]): boolean {
+  if (orders.length === 0) return true;
+  const sorted = [...orders].sort((a, b) => a - b);
+  return sorted.every((v, i) => v === i + 1);
+}
 
 const LessonInfo = forwardRef<LessonInfoRef, Props>(
   ({ initialData, exercises }, ref) => {
@@ -66,15 +78,48 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
       DEFAULT_EXERCISE_FORM,
     );
 
-    useImperativeHandle(ref, () => ({ getData: () => lessons }));
+    /**
+     * ID của exercise đang được edit từ list.
+     * Khi khác null: dropdown "Chọn bài tập" bị disable, nút đổi thành "Lưu thay đổi".
+     */
+    const [editingExerciseId, setEditingExerciseId] = useState<string | null>(
+      null,
+    );
 
-    // ✅ Tính displayOrder mặc định không bị trùng
+    useImperativeHandle(ref, () => ({
+      getData: () => lessons,
+      validate: () => {
+        // Kiểm tra displayOrder của lessons
+        const lessonOrders = lessons.map((l) => l.displayOrder);
+        if (!isSequential(lessonOrders)) {
+          const sorted = [...lessonOrders].sort((a, b) => a - b);
+          return `Thứ tự bài học không liền mạch. Hiện tại: [${sorted.join(", ")}]. Vui lòng đảm bảo thứ tự bắt đầu từ 1 và liền mạch (1, 2, 3, ...).`;
+        }
+
+        // Kiểm tra displayOrder của exercises trong từng lesson
+        for (const lesson of lessons) {
+          const exOrders = lesson.exercises
+            .map((e) => e.displayOrder)
+            .filter((o): o is number => o !== null && o !== undefined);
+
+          if (exOrders.length > 0 && !isSequential(exOrders)) {
+            const sorted = [...exOrders].sort((a, b) => a - b);
+            return `Bài học "${lesson.name || `Bài học ${lesson.displayOrder}`}": thứ tự bài tập không liền mạch. Hiện tại: [${sorted.join(", ")}].`;
+          }
+        }
+
+        return null;
+      },
+    }));
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
     const getNextDisplayOrder = () => {
       if (lessons.length === 0) return 1;
       return Math.max(...lessons.map((l) => l.displayOrder)) + 1;
     };
 
-    // ── Dialog ────────────────────────────────────────────────────────────────
+    // ── Dialog open/close ──────────────────────────────────────────────────────
 
     const handleOpenDialog = (lessonId?: string) => {
       if (lessonId) {
@@ -91,17 +136,17 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
         setEditingLessonId(null);
         setLessonForm({
           name: "",
-          displayOrder: String(getNextDisplayOrder()), // ✅ không trùng
+          displayOrder: String(getNextDisplayOrder()),
           notes: "",
         });
         setStagedExercises([]);
       }
       setSelectedExerciseId("");
       setExerciseForm(DEFAULT_EXERCISE_FORM);
+      setEditingExerciseId(null);
       setIsDialogOpen(true);
     };
 
-    // ✅ Một hàm duy nhất xử lý đóng dialog — reset đầy đủ state
     const handleCloseDialog = () => {
       setIsDialogOpen(false);
       setEditingLessonId(null);
@@ -109,9 +154,10 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
       setStagedExercises([]);
       setSelectedExerciseId("");
       setExerciseForm(DEFAULT_EXERCISE_FORM);
+      setEditingExerciseId(null);
     };
 
-    // ── Exercise staging ──────────────────────────────────────────────────────
+    // ── Exercise staging ───────────────────────────────────────────────────────
 
     const handleAddExercise = () => {
       if (!selectedExerciseId) return;
@@ -142,11 +188,77 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
       setExerciseForm(DEFAULT_EXERCISE_FORM);
     };
 
-    const handleRemoveExercise = (id: string) => {
-      setStagedExercises((prev) => prev.filter((e) => e.id !== id));
+    /**
+     * Lưu thay đổi cho exercise đang được edit từ list.
+     */
+    const handleSaveExerciseEdit = () => {
+      if (!editingExerciseId) return;
+
+      setStagedExercises((prev) =>
+        prev.map((ex) =>
+          ex.id === editingExerciseId
+            ? {
+                ...ex,
+                sets: exerciseForm.sets ? parseInt(exerciseForm.sets) : null,
+                reps: exerciseForm.reps ? parseInt(exerciseForm.reps) : null,
+                durationSeconds: exerciseForm.durationSeconds
+                  ? parseInt(exerciseForm.durationSeconds)
+                  : null,
+                restSeconds: exerciseForm.restSeconds
+                  ? parseInt(exerciseForm.restSeconds)
+                  : null,
+                notes: exerciseForm.exerciseNotes || null,
+                optional: exerciseForm.optional,
+              }
+            : ex,
+        ),
+      );
+
+      // Reset về trạng thái thêm mới
+      setEditingExerciseId(null);
+      setSelectedExerciseId("");
+      setExerciseForm(DEFAULT_EXERCISE_FORM);
     };
 
-    // ── Lesson CRUD (local) ───────────────────────────────────────────────────
+    const handleCancelExerciseEdit = () => {
+      setEditingExerciseId(null);
+      setSelectedExerciseId("");
+      setExerciseForm(DEFAULT_EXERCISE_FORM);
+    };
+
+    /**
+     * Click vào exercise trong list để edit.
+     */
+    const handleSelectExerciseForEdit = (stagedExercise: StagedExercise) => {
+      setEditingExerciseId(stagedExercise.id);
+      setSelectedExerciseId(stagedExercise.exercise.exerciseId);
+      setExerciseForm({
+        sets: stagedExercise.sets != null ? String(stagedExercise.sets) : "",
+        reps: stagedExercise.reps != null ? String(stagedExercise.reps) : "",
+        durationSeconds:
+          stagedExercise.durationSeconds != null
+            ? String(stagedExercise.durationSeconds)
+            : "",
+        restSeconds:
+          stagedExercise.restSeconds != null
+            ? String(stagedExercise.restSeconds)
+            : "",
+        exerciseNotes: stagedExercise.notes ?? "",
+        optional: stagedExercise.optional,
+      });
+    };
+
+    const handleRemoveExercise = (id: string) => {
+      setStagedExercises((prev) => prev.filter((e) => e.id !== id));
+      // Nếu đang edit exercise bị xóa thì reset form
+      if (editingExerciseId === id) {
+        setEditingExerciseId(null);
+        setSelectedExerciseId("");
+        setExerciseForm(DEFAULT_EXERCISE_FORM);
+      }
+    };
+
+    // ── Lesson CRUD (local) ────────────────────────────────────────────────────
 
     const handleSaveLesson = () => {
       if (!lessonForm.name?.trim() || !lessonForm.displayOrder) return;
@@ -158,7 +270,7 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
             l.id === editingLessonId
               ? {
                   ...l,
-                  name: lessonForm.name.trim(), // ✅ lưu name thực
+                  name: lessonForm.name.trim(),
                   displayOrder,
                   notes: lessonForm.notes,
                   exercises: stagedExercises,
@@ -171,21 +283,21 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
           ...prev,
           {
             id: Date.now().toString(),
-            name: lessonForm.name.trim(), // ✅ lưu name thực
+            name: lessonForm.name.trim(),
             displayOrder,
             notes: lessonForm.notes,
             exercises: stagedExercises,
           },
         ]);
       }
-      handleCloseDialog(); // ✅ dùng handleCloseDialog thay vì setIsDialogOpen(false)
+      handleCloseDialog();
     };
 
     const handleDeleteLesson = (lessonId: string) => {
       setLessons((prev) => prev.filter((l) => l.id !== lessonId));
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── Render ─────────────────────────────────────────────────────────────────
 
     return (
       <div className="space-y-6 mt-2 pt-6 border-t">
@@ -197,7 +309,6 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
             </p>
           </div>
 
-          {/* ✅ onOpenChange route qua handleCloseDialog để reset state đúng */}
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
@@ -227,7 +338,6 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
               <div className="flex-1 space-y-6 overflow-y-auto">
                 {/* Thông tin bài học */}
                 <div className="space-y-4">
-                  {/* ✅ Field name mới */}
                   <div>
                     <Label
                       htmlFor="lesson-name"
@@ -295,7 +405,9 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
                     Thêm bài tập cho bài học
                   </h4>
                   <p className="text-xs text-gray-500 mb-4">
-                    Lựa chọn và cấu hình các bài tập cho bài học này
+                    {editingExerciseId
+                      ? "Đang chỉnh sửa bài tập — thay đổi thông số rồi nhấn Lưu thay đổi."
+                      : "Lựa chọn và cấu hình các bài tập cho bài học này"}
                   </p>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <ExerciseForm
@@ -305,10 +417,16 @@ const LessonInfo = forwardRef<LessonInfoRef, Props>(
                       formData={exerciseForm}
                       onFormChange={setExerciseForm}
                       onAddExercise={handleAddExercise}
+                      // Edit mode props
+                      isEditingExercise={!!editingExerciseId}
+                      onSaveExerciseEdit={handleSaveExerciseEdit}
+                      onCancelExerciseEdit={handleCancelExerciseEdit}
                     />
                     <ExerciseList
                       stagedExercises={stagedExercises}
                       onRemoveExercise={handleRemoveExercise}
+                      onSelectExerciseForEdit={handleSelectExerciseForEdit}
+                      editingExerciseId={editingExerciseId}
                     />
                   </div>
                 </div>

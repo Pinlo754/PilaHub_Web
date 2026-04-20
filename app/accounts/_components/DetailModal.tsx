@@ -60,8 +60,7 @@ const DetailModal = ({ open, onOpenChange, account, onSubmit }: Props) => {
       .length === 0;
   const isDirty =
     !!initialForm &&
-    (form.email !== initialForm.email ||
-      form.phoneNumber !== initialForm.phoneNumber ||
+    (form.phoneNumber !== initialForm.phoneNumber ||
       form.role !== initialForm.role ||
       form.active !== initialForm.active);
 
@@ -117,7 +116,7 @@ const DetailModal = ({ open, onOpenChange, account, onSubmit }: Props) => {
     if (!isValid || !isDirty) return;
 
     onSubmit({
-      email: form.email,
+      email: account.email,
       phoneNumber: form.phoneNumber,
       role: form.role as RoleType,
       active: form.active,
@@ -164,14 +163,9 @@ const DetailModal = ({ open, onOpenChange, account, onSubmit }: Props) => {
             {/* Email */}
             <Field>
               <Label>Email</Label>
-              <Input
-                value={form.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                onBlur={() => handleBlur("email")}
-              />
-              {touched.email && errors.email && (
-                <p className="text-xs text-red-500">{errors.email}</p>
-              )}
+              <div className="px-3 py-2 rounded-md text-sm bg-gray-50 text-gray-500 border border-gray-200">
+                {account.email}
+              </div>
             </Field>
 
             {/* Phone */}

@@ -24,15 +24,7 @@ const SearchSection = ({ searchTerm, onChange }: Props) => {
 
       {/* Filter */}
       <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
-        Filter
-        <ChevronRight size={18} />
-      </button>
-      <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
-        Filter
-        <ChevronRight size={18} />
-      </button>
-      <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
-        Filter
+        Lọc
         <ChevronRight size={18} />
       </button>
     </div>

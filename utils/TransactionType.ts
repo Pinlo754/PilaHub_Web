@@ -1,0 +1,39 @@
+export const TRANSACTION_TYPE = {
+  WALLET_TOP_UP: "WALLET_TOP_UP",
+  WALLET_WITHDRAWAL: "WALLET_WITHDRAWAL",
+  SUBSCRIPTION_PACKAGE: "SUBSCRIPTION_PACKAGE",
+  SUBSCRIPTION_PRORATION_REFUND: "SUBSCRIPTION_PRORATION_REFUND",
+  SUBSCRIPTION_UPGRADE: "SUBSCRIPTION_UPGRADE",
+  REFUND: "REFUND",
+  PENALTY: "PENALTY",
+  BOOKING_COACH: "BOOKING_COACH",
+  BOOKING_COACH_REFUND: "BOOKING_COACH_REFUND",
+  ORDER: "ORDER",
+  VENDOR_PAYOUT: "VENDOR_PAYOUT",
+  PLATFORM_FEE: "PLATFORM_FEE",
+  SHIPPING_FEE_THIRD_PARTY: "SHIPPING_FEE_THIRD_PARTY",
+  SHIPPING_FEE_VENDOR: "SHIPPING_FEE_VENDOR",
+  VENDOR_EARNING: "VENDOR_EARNING",
+  COURSE: "COURSE",
+} as const;
+
+export type TransactionTypeEnum =
+  (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
+
+export const TRANSACTION_FLOW = {
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE",
+} as const;
+
+export type TransactionFlowType =
+  (typeof TRANSACTION_FLOW)[keyof typeof TRANSACTION_FLOW];
+
+export type TransactionType = {
+  transactionId: string;
+  transactionType: TransactionTypeEnum;
+  amount: number;
+  accountId: string;
+  referenceId: string;
+  description: string;
+  transactionDate: string;
+};

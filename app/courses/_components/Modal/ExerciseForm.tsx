@@ -9,10 +9,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Dumbbell, Clock, RotateCw, Zap } from "lucide-react";
+import {
+  Check,
+  Clock,
+  Dumbbell,
+  Pencil,
+  Plus,
+  RotateCw,
+  X,
+  Zap,
+} from "lucide-react";
 import { ExerciseType } from "@/utils/ExerciseType";
 import { ExerciseFormData } from "@/utils/StagedType";
-import { getLevelLabel } from "@/utils/uiMapper";
+import { getExerciseTypeLabel, getLevelLabel } from "@/utils/uiMapper";
 
 type Props = {
   exercises: ExerciseType[];
@@ -21,6 +30,10 @@ type Props = {
   formData: ExerciseFormData;
   onFormChange: (data: ExerciseFormData) => void;
   onAddExercise: () => void;
+  /** Đang trong chế độ edit exercise từ list */
+  isEditingExercise: boolean;
+  onSaveExerciseEdit: () => void;
+  onCancelExerciseEdit: () => void;
 };
 
 const ExerciseForm = ({
@@ -30,27 +43,44 @@ const ExerciseForm = ({
   formData,
   onFormChange,
   onAddExercise,
+  isEditingExercise,
+  onSaveExerciseEdit,
+  onCancelExerciseEdit,
 }: Props) => {
   const selectedExercise = exercises.find(
     (e) => e.exerciseId === selectedExerciseId,
   );
 
   return (
-    <div className="lg:col-span-1 space-y-4 max-h-[400px] overflow-y-auto">
+    <div className="lg:col-span-1 space-y-4 h-[350px] overflow-y-auto">
       {/* Exercise picker */}
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 flex gap-3 items-center">
         <Label
           htmlFor="exercise-select"
-          className="text-sm font-semibold block mb-2"
+          className="text-sm font-semibold block mb-2 whitespace-nowrap"
         >
           Chọn bài tập <span className="text-red-500">*</span>
         </Label>
-        <Select value={selectedExerciseId} onValueChange={onExerciseSelect}>
+        <Select
+          value={selectedExerciseId}
+          onValueChange={onExerciseSelect}
+          disabled={isEditingExercise}
+        >
           <SelectTrigger
             id="exercise-select"
-            className="bg-white border-2 border-blue-200 hover:border-blue-300 w-[75%]"
+            className={`bg-white border-2 w-[75%] ${
+              isEditingExercise
+                ? "border-gray-200 opacity-60 cursor-not-allowed"
+                : "border-blue-200 hover:border-blue-300"
+            }`}
           >
-            <SelectValue placeholder="Tìm kiếm và chọn một bài tập..." />
+            <SelectValue
+              placeholder={
+                isEditingExercise
+                  ? "Đang chỉnh sửa bài tập..."
+                  : "Tìm kiếm và chọn một bài tập..."
+              }
+            />
           </SelectTrigger>
           <SelectContent className="max-h-60 overflow-y-auto">
             {exercises.map((exercise) => (
@@ -66,6 +96,14 @@ const ExerciseForm = ({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Edit mode banner */}
+      {isEditingExercise && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+          <Pencil className="w-4 h-4 flex-shrink-0" />
+          <span className="font-medium">Đang chỉnh sửa bài tập</span>
+        </div>
+      )}
 
       {/* Exercise preview */}
       {selectedExercise && (
@@ -89,7 +127,7 @@ const ExerciseForm = ({
                 <div className="bg-white rounded p-2 border border-gray-200">
                   <p className="text-xs text-gray-600">Loại bài tập</p>
                   <p className="text-sm font-medium text-gray-900 mt-0.5">
-                    {selectedExercise.exerciseType}
+                    {getExerciseTypeLabel(selectedExercise.exerciseType)}
                   </p>
                 </div>
                 <div className="bg-white rounded p-2 border border-gray-200">
@@ -248,14 +286,37 @@ const ExerciseForm = ({
             </div>
           </label>
 
-          <Button
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
-            onClick={onAddExercise}
-            size="lg"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Thêm bài tập vào buổi học
-          </Button>
+          {/* Nút action: thêm mới hoặc lưu/hủy khi edit */}
+          {isEditingExercise ? (
+            <div className="flex gap-2">
+              <Button
+                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md"
+                onClick={onSaveExerciseEdit}
+                size="lg"
+              >
+                <Check className="w-5 h-5 mr-2" />
+                Lưu thay đổi
+              </Button>
+              <Button
+                variant="outline"
+                className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                onClick={onCancelExerciseEdit}
+                size="lg"
+              >
+                <X className="w-5 h-5 mr-1" />
+                Hủy
+              </Button>
+            </div>
+          ) : (
+            <Button
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+              onClick={onAddExercise}
+              size="lg"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Thêm bài tập vào buổi học
+            </Button>
+          )}
         </div>
       )}
     </div>

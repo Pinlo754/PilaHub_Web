@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { AccountType, UpdateAccountReq } from "@/utils/AccountType";
+import {
+  AccountType,
+  CreateAccountReq,
+  UpdateAccountReq,
+} from "@/utils/AccountType";
 import { AccountService } from "@/hooks/account.service";
+import { useConfirm } from "@/hooks/useConfirm";
+import { useToast } from "@/hooks/useToast";
 
 export const useAccounts = () => {
   // CONSTANT
-  const SIZE = 11;
+  const SIZE = 10;
 
   // STATE
   const [accounts, setAccounts] = useState<AccountType[]>([]);
@@ -19,6 +25,8 @@ export const useAccounts = () => {
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
 
+  const { confirmState, isConfirmOpen, confirm, closeConfirm } = useConfirm();
+  const { toasts, removeToast, showSuccess, showError } = useToast();
   // API
   const fetchAll = async () => {
     setIsLoading(true);
@@ -51,33 +59,54 @@ export const useAccounts = () => {
 
       setShowDetailModal(false);
       setSelectedAccount(null);
+      showSuccess("Cập nhật tài khoản thành công");
     } catch (err: any) {
-      if (err?.type === "BUSINESS_ERROR") {
-        setErrorMsg(err.message);
-      } else {
-        setErrorMsg("Có lỗi xảy ra");
-      }
+      showError(err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra");
     } finally {
       setIsLoading(false);
     }
   };
 
   const updateStatusAccount = async (accountId: string, active: boolean) => {
+    confirm({
+      title: active ? "Tạm dừng tài khoản?" : "Kích hoạt tài khoản?",
+      description: active
+        ? "Tài khoản sẽ bị tạm dừng và không thể đăng nhập."
+        : "Tài khoản sẽ được kích hoạt trở lại.",
+      confirmLabel: active ? "Tạm dừng" : "Kích hoạt",
+      variant: active ? "danger" : "info",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          if (active) {
+            await AccountService.deactiveAccount(accountId);
+            showSuccess("Đã tạm dừng tài khoản");
+          } else {
+            await AccountService.activeAccount(accountId);
+            showSuccess("Đã kích hoạt tài khoản");
+          }
+
+          await fetchAll();
+        } catch (err: any) {
+          showError(
+            err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra",
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const createAccount = async (payload: CreateAccountReq) => {
     setIsLoading(true);
     try {
-      if (active) {
-        await AccountService.deactiveAccount(accountId);
-      } else {
-        await AccountService.activeAccount(accountId);
-      }
-
+      await AccountService.createAccount(payload);
       await fetchAll();
+      setShowCreateModal(false);
+      showSuccess("Tạo tài khoản HLV thành công");
     } catch (err: any) {
-      if (err?.type === "BUSINESS_ERROR") {
-        setErrorMsg(err.message);
-      } else {
-        setErrorMsg("Có lỗi xảy ra");
-      }
+      showError(err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra");
     } finally {
       setIsLoading(false);
     }
@@ -131,10 +160,18 @@ export const useAccounts = () => {
     openDetailModal,
     closeDetailModal,
     setShowDetailModal,
+    createAccount,
     updateAccount,
     updateStatusAccount,
     openCreateModal,
     closeCreateModal,
     showCreateModal,
+    // confirm
+    confirmState,
+    isConfirmOpen,
+    closeConfirm,
+    // toast
+    toasts,
+    removeToast,
   };
 };

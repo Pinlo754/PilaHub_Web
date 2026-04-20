@@ -22,6 +22,8 @@ export type AccountType = {
   active: boolean;
   emailVerified: boolean;
   lastSeenAt: string;
+  fcmToken: string;
+  isReminded: boolean;
   createdAt: string;
   activePackageType: PackageType | null;
 };
@@ -39,4 +41,10 @@ export type UpdateAccountReq = {
   role: RoleType;
   active: boolean;
   emailVerified?: boolean;
+};
+
+export type CreateAccountReq = {
+  email: string;
+  phoneNumber: string;
+  password: string;
 };
