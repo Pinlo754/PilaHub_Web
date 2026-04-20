@@ -6,8 +6,10 @@ import { useCourses } from "./useCourses";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import SearchSection from "./_components/SearchSection";
 import CourseTable from "./_components/CourseTable";
-import Pagination from "./_components/Pagination";
 import DetailModal from "./_components/Modal/DetailModal";
+import Toast from "@/components/Toast";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import Pagination from "./_components/Pagination";
 
 export default function CoursesPage() {
   // HOOK
@@ -29,6 +31,19 @@ export default function CoursesPage() {
     handleSubmit,
     exercises,
     handleRowClick,
+    toasts,
+    removeToast,
+    confirmState,
+    isConfirmOpen,
+    confirm,
+    closeConfirm,
+    currentPage,
+    deleteCourse,
+    toggleCourseStatus,
+    totalPages,
+    setCurrentPage,
+    filterLevel,
+    setFilterLevel,
   } = useCourses();
 
   return (
@@ -44,16 +59,27 @@ export default function CoursesPage() {
             <SearchSection
               searchTerm={searchTerm}
               onChange={setSearchTerm}
+              filterLevel={filterLevel}
+              onFilterLevelChange={setFilterLevel}
               openDetailModal={openCreateModal}
             />
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <CourseTable courses={courses} onRowClick={handleRowClick} />
+              <CourseTable
+                courses={courses}
+                onRowClick={handleRowClick}
+                onToggleStatus={toggleCourseStatus}
+                onDelete={deleteCourse}
+              />
             </div>
 
             {/* Pagination */}
-            <Pagination />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </main>
       </div>
@@ -66,6 +92,20 @@ export default function CoursesPage() {
         onSubmit={handleSubmit}
         exercises={exercises}
       />
+
+      <Toast toasts={toasts} onRemove={removeToast} />
+
+      {confirmState && (
+        <ConfirmDialog
+          open={isConfirmOpen}
+          onOpenChange={(open) => !open && closeConfirm()}
+          title={confirmState.title}
+          description={confirmState.description}
+          confirmLabel={confirmState.confirmLabel}
+          variant={confirmState.variant}
+          onConfirm={confirmState.onConfirm}
+        />
+      )}
     </div>
   );
 }

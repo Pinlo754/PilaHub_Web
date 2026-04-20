@@ -42,4 +42,19 @@ export const LessonService = {
 
     return res.data.data;
   },
+
+  // DELETE LESSON
+  deleteLesson: async (lessonId: string): Promise<any> => {
+    const res = await api.delete<ApiResponse<any>>(`/lessons/${lessonId}`);
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
 };

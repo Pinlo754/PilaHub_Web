@@ -14,8 +14,8 @@ const LessonList = ({ lessons, onOpenDialog, onDeleteLesson }: Props) => {
     <>
       {/* Empty state */}
       {lessons.length === 0 ? (
-        <Card className="border-2 border-dashed border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="flex flex-col items-center justify-center py-16">
+        <Card className="border-2 border-dashed border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 max-h-[35vh]">
+          <CardContent className="flex flex-col items-center justify-center py-16 h-[35vh]">
             <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
               <Dumbbell className="w-8 h-8 text-blue-600" />
             </div>
@@ -38,7 +38,7 @@ const LessonList = ({ lessons, onOpenDialog, onDeleteLesson }: Props) => {
         </Card>
       ) : (
         /* Lesson cards */
-        <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2 pb-4">
+        <div className="grid gap-4 max-h-[35vh] overflow-y-auto pr-2 pb-4">
           {[...lessons]
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map((lesson) => (

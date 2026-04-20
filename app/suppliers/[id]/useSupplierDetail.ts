@@ -11,7 +11,7 @@ type Props = {
   vendorId: string;
 };
 
-const PRODUCT_PAGE_SIZE = 8;
+const PRODUCT_PAGE_SIZE = 5;
 const RECENT_ORDER_LIMIT = 12;
 const ORDER_PAGE_SIZE = 3;
 

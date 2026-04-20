@@ -14,10 +14,15 @@ const ProductTable = ({ productPage, currentPage, onPageChange }: Props) => {
   const totalPages = productPage?.totalPages ?? 1;
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-orange-200 p-6">
-      <h3 className="text-lg font-semibold text-orange-700 mb-4">
-        Danh sách sản phẩm
-      </h3>
+    <div className="bg-white rounded-2xl border-2 border-orange-200 p-5 flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-orange-700">
+          Danh sách sản phẩm
+        </h3>
+        <span className="text-xs text-gray-400">
+          {productPage?.totalElements ?? 0} sản phẩm
+        </span>
+      </div>
 
       <table className="w-full">
         <thead>

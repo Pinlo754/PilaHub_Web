@@ -1,5 +1,6 @@
 import {
   AccountType,
+  CreateAccountReq,
   PaginationReq,
   UpdateAccountReq,
 } from "@/utils/AccountType";
@@ -16,6 +17,41 @@ export const AccountService = {
       {
         params: payload,
       },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // GET BY ID
+  getById: async (accountId: string): Promise<AccountType> => {
+    const res = await api.get<ApiResponse<AccountType>>(
+      `/accounts/${accountId}`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // CREATE ACCOUNT
+  createAccount: async (payload: CreateAccountReq): Promise<AccountType> => {
+    const res = await api.post<ApiResponse<AccountType>>(
+      `/auth/admin/create-coach`,
+      payload,
     );
 
     if (!res.data.success) {
@@ -68,7 +104,7 @@ export const AccountService = {
   // ACTIVE ACCOUNT
   activeAccount: async (accountId: string): Promise<AccountType> => {
     const res = await api.patch<ApiResponse<AccountType>>(
-      `/accounts/${accountId}/active`,
+      `/accounts/${accountId}/activate`,
     );
 
     if (!res.data.success) {
