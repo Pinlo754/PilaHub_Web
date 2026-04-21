@@ -3,6 +3,7 @@ export const SYSTEM_KEY = {
   HOLDING_DAYS: "HOLDING_DAYS",
   HOURS_PER_SLOT: "HOURS_PER_SLOT",
   EMAIL_ADMIN: "EMAIL_ADMIN",
+  VENDOR_CONFIRM_ORDER_HOURS: "VENDOR_CONFIRM_ORDER_HOURS",
 } as const;
 
 export type SystemKeyType = (typeof SYSTEM_KEY)[keyof typeof SYSTEM_KEY];

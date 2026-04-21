@@ -23,6 +23,7 @@ export type TransactionTypeEnum =
 export const TRANSACTION_FLOW = {
   INCOME: "INCOME",
   EXPENSE: "EXPENSE",
+  NORMAL: "NORMAL",
 } as const;
 
 export type TransactionFlowType =
