@@ -144,7 +144,7 @@ const DetailModal = ({ open, onOpenChange, transaction }: Props) => {
           </div>
 
           {/* Mã tham chiếu + nút copy */}
-          <div className="border-b pb-4">
+          {/* <div className="border-b pb-4">
             <div className="text-sm text-gray-600">Mã tham chiếu</div>
             <div className="flex items-center gap-2 mt-1">
               <div className="text-gray-800 font-mono text-sm break-all">
@@ -164,7 +164,7 @@ const DetailModal = ({ open, onOpenChange, transaction }: Props) => {
                 </button>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Số tiền */}
           <div className="border-b pb-4">

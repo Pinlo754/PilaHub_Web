@@ -391,12 +391,12 @@ export const TRANSACTION_FLOW_MAP: Record<
 
   // Vendor
   VENDOR_PAYOUT: "EXPENSE",
-  VENDOR_EARNING: "EXPENSE",
+  VENDOR_EARNING: "NORMAL",
 
   // Phí
-  PLATFORM_FEE: "INCOME",
-  SHIPPING_FEE_THIRD_PARTY: "EXPENSE",
-  SHIPPING_FEE_VENDOR: "EXPENSE",
+  PLATFORM_FEE: "NORMAL",
+  SHIPPING_FEE_THIRD_PARTY: "NORMAL",
+  SHIPPING_FEE_VENDOR: "NORMAL",
 
   // Course
   COURSE: "INCOME",
@@ -415,6 +415,11 @@ export const TRANSACTION_FLOW_CONFIG: Record<
     bgColor: "bg-red-100",
     textColor: "text-red-700",
     sign: "-",
+  },
+  NORMAL: {
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-700",
+    sign: "",
   },
 };
 
@@ -751,6 +756,7 @@ export const SYSTEM_CONFIG_LABEL: Record<SystemKeyType, string> = {
   HOLDING_DAYS: "Số ngày giữ tiền",
   HOURS_PER_SLOT: "Số giờ mỗi slot",
   EMAIL_ADMIN: "Email quản trị viên",
+  VENDOR_CONFIRM_ORDER_HOURS: "Số giờ xác nhận đơn hàng từ nhà cung cấp",
 };
 
 export const BOOKING_STATUS_MAP: Record<BookingStatusType, MapType> = {
