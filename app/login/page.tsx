@@ -54,7 +54,6 @@ export default function VendorLogin() {
             P
           </div>
           <h1 className="text-3xl font-bold text-gray-900">PilaHub</h1>
-          <p className="text-gray-600 mt-2">Đăng nhập kho bán hàng</p>
         </div>
 
         {/* Form */}
@@ -119,13 +118,6 @@ export default function VendorLogin() {
             Đăng ký ngay
           </Link>
         </p>
-
-        {/* Info */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Demo:</strong> Sử dụng tài khoản demo để kiểm tra tính năng
-          </p>
-        </div>
       </div>
     </div>
   )
