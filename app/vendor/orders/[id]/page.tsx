@@ -166,86 +166,96 @@ export default function OrderDetails() {
           <div className="p-6 space-y-6">
             {/* Back Button */}
             <div className="flex justify-between items-center">
-            <Link href="/vendor/orders" className="flex items-center gap-2 text-orange-600">
-              <ChevronLeft size={20} />
-              Quay lại
-            </Link>
+              <Link href="/vendor/orders" className="flex items-center gap-2 text-orange-600">
+                <ChevronLeft size={20} />
+                Quay lại
+              </Link>
 
-            <div className="flex gap-3">
+              <div className="flex gap-3">
 
-              {/* ===== KHÔNG LẮP ĐẶT ===== */}
-              {!hasInstallation && (
-                <>
-                  {order.status === 'Chờ xác nhận' && (
-                    <Button onClick={() => updateStatus('CONFIRMED')}>
-                      Xác nhận đơn hàng
-                    </Button>
-                  )}
+                {/* ===== KHÔNG LẮP ĐẶT ===== */}
+                {!hasInstallation && (
+                  <>
+                    {order.status === 'Chờ xác nhận' && (
+                      <>
+                        <Button variant="destructive" onClick={() => updateStatus('CANCELLED')}>
+                          Hủy đơn hàng
+                        </Button>
+                        <Button onClick={() => updateStatus('CONFIRMED')}>
+                          Xác nhận đơn hàng
+                        </Button>
+                      </>
+                    )}
 
-                  {order.status === 'Đã xác nhận' && (
-                    <Button onClick={() => updateStatus('READY')}>
-                      Đã đóng gói xong
-                    </Button>
-                  )}
+                    {order.status === 'Đã xác nhận' && (
+                      <Button onClick={() => updateStatus('READY')}>
+                        Đã đóng gói xong
+                      </Button>
+                    )}
 
-                  {order.status === 'Đã đóng gói' && (
-                    <Button
-                      onClick={async () => {
-                        await createShipment()
-                        await updateStatus('SHIPPED')
-                      }}
-                    >
-                      Bàn giao vận chuyển
-                    </Button>
-                  )}
-                </>
-              )}
+                    {order.status === 'Đã đóng gói' && (
+                      <Button
+                        onClick={async () => {
+                          await createShipment()
+                          await updateStatus('SHIPPED')
+                        }}
+                      >
+                        Bàn giao vận chuyển
+                      </Button>
+                    )}
+                  </>
+                )}
 
-              {/* ===== CÓ LẮP ĐẶT ===== */}
-              {hasInstallation && (
-                <>
-                  {order.status === 'Chờ xác nhận' && (
-                    <Button onClick={() => updateStatus('CONFIRMED')}>
-                      Xác nhận đơn hàng
-                    </Button>
-                  )}
+                {/* ===== CÓ LẮP ĐẶT ===== */}
+                {hasInstallation && (
+                  <>
+                    {order.status === 'Chờ xác nhận' && (
+                      <>
+                        <Button variant="destructive" onClick={() => updateStatus('CANCELLED')}>
+                          Hủy đơn hàng
+                        </Button>
+                        <Button onClick={() => updateStatus('CONFIRMED')}>
+                          Xác nhận đơn hàng
+                        </Button>
+                      </>
+                    )}
 
-                  {order.status === 'Đã xác nhận' && (
-                    <Button onClick={() => updateStatus('READY')}>
-                      Đã đóng gói xong
-                    </Button>
-                  )}
+                    {order.status === 'Đã xác nhận' && (
+                      <Button onClick={() => updateStatus('READY')}>
+                        Đã đóng gói xong
+                      </Button>
+                    )}
 
-                  {order.status === 'Đã đóng gói' && (
-                    <Button
-                      onClick={async () => {
-                        await createShipment()
-                        await updateStatus('SHIPPED')
-                      }}
-                    >
-                      Tự vận chuyển
-                    </Button>
-                  )}
+                    {order.status === 'Đã đóng gói' && (
+                      <Button
+                        onClick={async () => {
+                          await createShipment()
+                          await updateStatus('SHIPPED')
+                        }}
+                      >
+                        Tự vận chuyển
+                      </Button>
+                    )}
 
-                  {/* ✅ SAU SHIPPED → DROPDOWN */}
-                  {order.status === 'Đang vận chuyển' && order.shipmentStatus && (
-                    <select
-                      value={order.shipmentStatus}
-                      onChange={(e) => updateShipmentStatus(e.target.value)}
-                      className="h-14 border-2 border-orange-200 rounded-lg px-3"
-                    >
-                      {shipmentOptions.map((st) => (
-                        <option key={st} value={st}>
-                          {st}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </>
-              )}
+                    {/* ✅ SAU SHIPPED → DROPDOWN */}
+                    {order.status === 'Đang vận chuyển' && order.shipmentStatus && (
+                      <select
+                        value={order.shipmentStatus}
+                        onChange={(e) => updateShipmentStatus(e.target.value)}
+                        className="h-14 border-2 border-orange-200 rounded-lg px-3"
+                      >
+                        {shipmentOptions.map((st) => (
+                          <option key={st} value={st}>
+                            {st}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </>
+                )}
 
+              </div>
             </div>
-          </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Content */}

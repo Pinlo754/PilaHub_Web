@@ -22,10 +22,10 @@ type Product = {
 };
 
 export const ProductService = {
-  async getMyProduct(id: string): Promise<ApiResponse<any>> {
+  async getMyProduct(id: string, pageable: any): Promise<ApiResponse<any>> {
     try {
       //const res = await api.get(`/products/vendor/${id}`);
-      const res = await api.get(`/products`);
+      const res = await api.get(`/products?vendorId=${id}`);
       console.log(res.data);
       return res.data;
     } catch (e: any) {

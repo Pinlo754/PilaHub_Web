@@ -14,6 +14,10 @@ export default function ProductsPage() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize] = useState(10)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,26 +30,35 @@ export default function ProductsPage() {
           return
         }
 
-        const res = await ProductService.getMyProduct(vendorId)
+        const res = await ProductService.getByVendorId(vendorId, currentPage, pageSize)
 
-        if (res.success) {
-          const productList = Array.isArray(res.data?.content)
-            ? res.data.content
-            : []
-          setProducts(productList)
+        if (res) {
+          setProducts(res.content || [])
+          setTotalPages(res.totalPages || 0)
+          setTotalElements(res.totalElements || 0)
         } else {
           setProducts(mockProducts)
+          setTotalPages(1)
+          setTotalElements(mockProducts.length)
         }
 
       } catch (error) {
         console.error('Fetch products error:', error)
+        setProducts(mockProducts)
+        setTotalPages(1)
+        setTotalElements(mockProducts.length)
       } finally {
         setLoading(false)
       }
     }
 
     fetchProducts()
-  }, [])
+  }, [currentPage, pageSize])
+
+  // Reset page when search or filter changes
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [searchTerm, filterStatus])
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -279,6 +292,38 @@ export default function ProductsPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 bg-orange-50 border-t border-orange-200">
+            <div className="text-sm text-orange-700">
+              Hiển thị {products.length} / {totalElements} sản phẩm
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                disabled={currentPage === 0}
+                className="border-orange-300 text-orange-700 hover:bg-orange-100"
+              >
+                Trước
+              </Button>
+              <span className="text-sm text-orange-900 font-medium">
+                Trang {currentPage + 1} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                disabled={currentPage === totalPages - 1}
+                className="border-orange-300 text-orange-700 hover:bg-orange-100"
+              >
+                Sau
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

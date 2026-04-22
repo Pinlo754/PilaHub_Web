@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { VendorSidebar } from "@/components/vendor-sidebar";
 import { VendorHeader } from "@/components/vendor-header";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Eye } from "lucide-react";
 import Link from "next/link";
 import { OrderService } from "@/hooks/order.service";
@@ -43,6 +45,7 @@ export default function VendorOrders() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{show: boolean, title: string, message: string, onConfirm: () => void} | null>(null);
 
   // map status sang tiếng Việt
   const mapStatus = (status: string) => {
@@ -241,7 +244,6 @@ export default function VendorOrders() {
                       <th className="p-3">Tiền</th>
                       <th className="p-3">Ngày</th>
                       <th className="p-3">Trạng thái</th>
-                      <th className="p-3">Chi tiết</th>
                     </tr>
                   </thead>
 
@@ -273,12 +275,15 @@ export default function VendorOrders() {
                             <select
                               value={order.status}
                               disabled={updating === order.orderId}
-                              onChange={(e) =>
-                                handleOrderStatus(
-                                  order.orderId,
-                                  e.target.value
-                                )
-                              }
+                              onChange={(e) => {
+                                const newStatus = e.target.value;
+                                setConfirmModal({
+                                  show: true,
+                                  title: "Xác nhận thay đổi trạng thái đơn hàng",
+                                  message: `Bạn có chắc muốn thay đổi trạng thái đơn hàng thành ${mapStatus(newStatus)}?`,
+                                  onConfirm: () => handleOrderStatus(order.orderId, newStatus)
+                                });
+                              }}
                               className="border rounded px-2 py-1 text-xs w-full"
                             >
                               {ORDER_STATUS.map((s) => (
@@ -301,13 +306,15 @@ export default function VendorOrders() {
                                   key={s.shipmentId}
                                   value={s.status}
                                   disabled={updating === s.shipmentId}
-                                  onChange={(e) =>
-                                    handleShipmentStatus(
-                                      order.orderId,
-                                      s.shipmentId,
-                                      e.target.value
-                                    )
-                                  }
+                                  onChange={(e) => {
+                                    const newStatus = e.target.value;
+                                    setConfirmModal({
+                                      show: true,
+                                      title: "Xác nhận thay đổi trạng thái shipment",
+                                      message: `Bạn có chắc muốn thay đổi trạng thái shipment thành ${newStatus}?`,
+                                      onConfirm: () => handleShipmentStatus(order.orderId, s.shipmentId, newStatus)
+                                    });
+                                  }}
                                   className="border rounded px-2 py-1 text-xs w-full mb-1"
                                 >
                                   {SHIPMENT_STATUS.map((st) => (
@@ -333,15 +340,6 @@ export default function VendorOrders() {
                             )}
                           </div>
                         </td>
-
-                        <td className="p-3">
-                          <Link
-                            href={`/vendor/orders/${order.orderId}`}
-                            className="text-blue-600"
-                          >
-                            <Eye size={16} />
-                          </Link>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -354,6 +352,20 @@ export default function VendorOrders() {
                 )}
               </div>
             </Card>
+
+            {/* Confirm Modal */}
+            <Dialog open={confirmModal?.show} onOpenChange={(open) => !open && setConfirmModal(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{confirmModal?.title}</DialogTitle>
+                  <DialogDescription>{confirmModal?.message}</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setConfirmModal(null)}>Hủy</Button>
+                  <Button onClick={() => { confirmModal?.onConfirm(); setConfirmModal(null); }}>Xác nhận</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

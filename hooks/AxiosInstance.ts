@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://api.pilahub.io.vn/api",
+  baseURL: "http://192.168.31.145:8080/api",
   headers: {
     "Content-Type": "application/json",
   },
