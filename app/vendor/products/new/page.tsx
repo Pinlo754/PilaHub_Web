@@ -16,14 +16,14 @@ type Product = {
     name: string
     description: string
     imageUrl: string
-    price: number
-    stockQuantity: number
+    price: number | string
+    stockQuantity: number | string
     brand: string
     specifications: string
-    height: number
-    length: number
-    width: number
-    weight: number
+    height: number | string
+    length: number | string
+    width: number | string
+    weight: number | string
     installationSupported: boolean
     regionSupported: string[]
 }
@@ -45,14 +45,14 @@ const initialState: Product = {
     name: '',
     description: '',
     imageUrl: '',
-    price: 0,
-    stockQuantity: 0,
+    price: '',
+    stockQuantity: '',
     brand: '',
     specifications: '',
-    height: 0,
-    length: 0,
-    width: 0,
-    weight: 0,
+    height: '',
+    length: '',
+    width: '',
+    weight: '',
     installationSupported: false,
     regionSupported: []
 }
@@ -71,6 +71,9 @@ export default function ProductFormPage() {
     const isEdit = !!id
     const [categories, setCategories] = useState<any[]>([])
     const [refs, setRefs] = useState<any[]>([])
+
+    const getNumberValue = (value: string | number) =>
+        typeof value === 'number' ? value : Number(value) || 0
     // 🔥 FETCH nếu là EDIT
     useEffect(() => {
         const fetchMeta = async () => {
@@ -102,6 +105,12 @@ export default function ProductFormPage() {
                 if (res.success && res.data) {
                     setFormData({
                         ...res.data,
+                        price: getNumberValue(res.data.price),
+                        stockQuantity: getNumberValue(res.data.stockQuantity),
+                        height: getNumberValue(res.data.height),
+                        length: getNumberValue(res.data.length),
+                        width: getNumberValue(res.data.width),
+                        weight: getNumberValue(res.data.weight),
                         regionSupported: res.data.regionSupported || [],
                         installationSupported: res.data.installationSupported ?? false
                     })
@@ -172,11 +181,13 @@ export default function ProductFormPage() {
 
     // ✅ Validate
     const validate = () => {
+        const price = getNumberValue(formData.price)
+
         if (!formData.name.trim()) {
             alert('Nhập tên sản phẩm')
             return false
         }
-        if (!formData.price || formData.price <= 0) {
+        if (price <= 0) {
             alert('Giá phải > 0')
             return false
         }
@@ -239,7 +250,7 @@ export default function ProductFormPage() {
                     </h1>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex gap-6">
+                <form onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="flex gap-6">
 
                     {/* ===== LEFT ===== */}
                     <div className="w-3/4 flex flex-col gap-6">
@@ -291,7 +302,7 @@ export default function ProductFormPage() {
                                 </div>
 
                                 {/* Ref */}
-                                <div className="form-group">
+                                {/* <div className="form-group">
                                     <label className="label">Sản phẩm tham chiếu</label>
                                     <select
                                         name="refId"
@@ -306,7 +317,7 @@ export default function ProductFormPage() {
                                             </option>
                                         ))}
                                     </select>
-                                </div>
+                                </div> */}
 
                                 {/* Price */}
                                 <div className="form-group">

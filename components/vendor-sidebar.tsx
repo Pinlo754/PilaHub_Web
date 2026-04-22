@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 const menuItems = [
   { icon: LayoutDashboard, label: 'Tổng quan', href: '/vendor/dashboard' },
-  { icon: Boxes, label: 'Kho hàng', href: '/vendor/inventory' },
+  //{ icon: Boxes, label: 'Kho hàng', href: '/vendor/inventory' },
   { icon: Package, label: 'Sản phẩm', href: '/vendor/products' },
   // { icon: Package, label: 'Chất bổ sung', href: '/vendor/supplements' },
   { icon: ShoppingCart, label: 'Đơn hàng', href: '/vendor/orders' },
