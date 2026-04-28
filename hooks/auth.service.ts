@@ -86,6 +86,21 @@ export async function register(payload: {
   }
 }
 
+export async function registerVendor(payload: {
+  email: string;
+  password: string;
+  phoneNumber?: string;
+}): Promise<AuthResult> {
+  try {
+    const res = await api.post("/auth/register-vendor", payload);
+    const data = res.data?.data ?? res.data;
+    return { ok: true, data };
+  } catch (e: any) {
+    const error = e.response?.data ?? e.message ?? e;
+    return { ok: false, error };
+  }
+}
+
 export async function verifyEmail(
   email: string,
   otpCode: string

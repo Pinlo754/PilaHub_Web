@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { register } from '@/hooks/auth.service'
+import { registerVendor } from '@/hooks/auth.service'
 import { useRouter } from 'next/navigation'
 
 export default function VendorRegister() {
@@ -34,7 +34,7 @@ export default function VendorRegister() {
     if (!validate()) return
 
     console.log('Register with:', formData)
-    const res = await register(formData)
+    const res = await registerVendor(formData)
 
     if(res) {
       router.push('/vendor/dashboard')
