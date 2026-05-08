@@ -28,19 +28,39 @@ export default function VendorWallet() {
   const [withdrawBank, setWithdrawBank] = useState("bidv");
   const [withdrawNote, setWithdrawNote] = useState("");
 
+  // --- LOGIC TỰ ĐỘNG BẮT LỖI CHƯA CÓ VÍ VÀ MỞ VÍ TỰ ĐỘNG ---
   const loadWallet = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
+      const res = await WalletService.getMyWallet();
 
-    const res = await WalletService.getMyWallet();
-
-    if (res.success) {
-      setWallet(res.data);
-      await loadTransactions();
-    } else {
-      console.error(res.message);
+      if (res.success) {
+        setWallet(res.data);
+        await loadTransactions();
+      } else if (res.errorCode === "WALLET_NOT_FOUND") {
+        console.log("Phát hiện tài khoản chưa có ví. Tiến hành tạo ví tự động...");
+        
+        const openRes = await WalletService.openWallet();
+        
+        if (openRes && (openRes.success || openRes.data)) {
+          console.log("Mở ví thành công! Đang tải lại thông tin ví...");
+          // Gọi đệ quy lại chính hàm loadWallet để lấy dữ liệu ví mới tạo
+          const retryRes = await WalletService.getMyWallet();
+          if (retryRes.success) {
+            setWallet(retryRes.data);
+            await loadTransactions();
+          }
+        } else {
+          console.error("Yêu cầu mở ví tự động thất bại:", openRes?.message);
+        }
+      } else {
+        console.error(res.message);
+      }
+    } catch (error) {
+      console.error("Lỗi xảy ra trong quá trình xử lý ví:", error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -48,12 +68,15 @@ export default function VendorWallet() {
   }, [])
 
   const loadTransactions = async () => {
-    const res = await TransactionService.getMyTransactions();
-
-    if (res.success) {
-      setTransactions(res.data);
-    } else {
-      console.error(res.message);
+    try {
+      const res = await TransactionService.getMyTransactions();
+      if (res.success) {
+        setTransactions(res.data);
+      } else {
+        console.error(res.message);
+      }
+    } catch (error) {
+      console.error("Lỗi tải lịch sử giao dịch:", error);
     }
   };
 
@@ -71,7 +94,6 @@ export default function VendorWallet() {
   }
 
   const handleWithdrawal = async () => {
-
     const payload = {
       recipientName: withdrawName,
       bankAccountNumber: withdrawAccount,
@@ -89,7 +111,6 @@ export default function VendorWallet() {
 
       setShowWithdrawModal(false);
       loadWallet();
-      loadTransactions();
     } else {
       alert(res.message);
     }
@@ -115,21 +136,21 @@ export default function VendorWallet() {
               <Card className="border-2 border-blue-200 p-6 bg-gradient-to-br from-blue-50 to-blue-100">
                 <p className="text-gray-600 text-sm mb-2">Tổng số dư</p>
                 <p className="text-3xl font-bold text-blue-600">
-                  {wallet?.balanceVND?.toLocaleString()}đ
+                  {wallet?.balanceVND?.toLocaleString() || 0}đ
                 </p>
               </Card>
 
               <Card className="border-2 border-green-200 p-6 bg-gradient-to-br from-green-50 to-green-100">
                 <p className="text-gray-600 text-sm mb-2">Số dư khả dụng</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {wallet?.availableVND?.toLocaleString()}đ
+                  {wallet?.availableVND?.toLocaleString() || 0}đ
                 </p>
               </Card>
 
               <Card className="border-2 border-red-200 p-6 bg-gradient-to-br from-red-50 to-red-100">
                 <p className="text-gray-600 text-sm mb-2">Tiền bị khóa</p>
                 <p className="text-3xl font-bold text-red-600">
-                  {wallet?.lockedVND?.toLocaleString()}đ
+                  {wallet?.lockedVND?.toLocaleString() || 0}đ
                 </p>
               </Card>
 
@@ -159,66 +180,61 @@ export default function VendorWallet() {
               <h3 className="font-semibold mb-4">Lịch sử giao dịch</h3>
 
               <div className="space-y-3">
+                {transactions.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">Chưa có giao dịch nào được thực hiện.</p>
+                ) : (
+                  transactions.map((tx: any) => {
+                    const isWithdrawal = tx.transactionType === "WALLET_WITHDRAWAL";
+                    const status = tx.referenceId ? "Hoàn thành" : "Đang xử lí";
 
-                {transactions.map((tx: any) => {
+                    return (
+                      <div
+                        key={tx.transactionId}
+                        className="flex justify-between p-4 bg-orange-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              isWithdrawal ? "bg-red-100" : "bg-green-100"
+                            }`}
+                          >
+                            {isWithdrawal ? (
+                              <ArrowUpRight className="text-red-600" size={20} />
+                            ) : (
+                              <ArrowDownLeft className="text-green-600" size={20} />
+                            )}
+                          </div>
 
-                  const isWithdrawal = tx.transactionType === "WALLET_WITHDRAWAL";
-                  const status = tx.referenceId ? "Hoàn thành" : "Đang xử lí";
-
-                  return (
-                    <div
-                      key={tx.transactionId}
-                      className="flex justify-between p-4 bg-orange-50 rounded-lg"
-                    >
-
-                      <div className="flex items-center gap-4">
-
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            isWithdrawal ? "bg-red-100" : "bg-green-100"
-                          }`}
-                        >
-                          {isWithdrawal ? (
-                            <ArrowUpRight className="text-red-600" size={20} />
-                          ) : (
-                            <ArrowDownLeft className="text-green-600" size={20} />
-                          )}
+                          <div>
+                            <p className="font-semibold">{tx.description}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(tx.transactionDate).toLocaleString()}
+                            </p>
+                          </div>
                         </div>
 
-                        <div>
-                          <p className="font-semibold">{tx.description}</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(tx.transactionDate).toLocaleString()}
+                        <div className="text-right">
+                          <p
+                            className={`font-bold text-lg ${
+                              isWithdrawal ? "text-red-600" : "text-green-600"
+                            }`}
+                          >
+                            {isWithdrawal ? "-" : "+"}
+                            {Number(tx.amount).toLocaleString()}đ
+                          </p>
+
+                          <p
+                            className={`text-xs font-semibold ${
+                              tx.referenceId ? "text-green-600" : "text-orange-500"
+                            }`}
+                          >
+                            {status}
                           </p>
                         </div>
-
                       </div>
-
-                      <div className="text-right">
-
-                        <p
-                          className={`font-bold text-lg ${
-                            isWithdrawal ? "text-red-600" : "text-green-600"
-                          }`}
-                        >
-                          {isWithdrawal ? "-" : "+"}
-                          {Number(tx.amount).toLocaleString()}đ
-                        </p>
-
-                        <p
-                          className={`text-xs font-semibold ${
-                            tx.referenceId ? "text-green-600" : "text-orange-500"
-                          }`}
-                        >
-                          {status}
-                        </p>
-
-                      </div>
-
-                    </div>
-                  );
-                })}
-
+                    );
+                  })
+                )}
               </div>
             </Card>
 
@@ -228,84 +244,72 @@ export default function VendorWallet() {
 
       {/* Deposit Modal */}
       {showDepositModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <Card className="w-96 p-6 space-y-4">
-
             <h3 className="text-lg font-semibold">Nạp tiền</h3>
-
             <input
               type="number"
               placeholder="Nhập số tiền"
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value)}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
-
             <textarea
               placeholder="Nội dung"
               value={depositDescription}
               onChange={(e) => setDepositDescription(e.target.value)}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
-
             <div className="flex gap-3">
-              <Button className="flex-1 bg-green-600" onClick={handleDeposit}>
+              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleDeposit}>
                 Xác nhận
               </Button>
               <Button variant="outline" onClick={() => setShowDepositModal(false)}>
                 Hủy
               </Button>
             </div>
-
           </Card>
         </div>
       )}
 
       {/* Withdraw Modal */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <Card className="w-96 p-6 space-y-4">
-
             <h3 className="text-lg font-semibold">Rút tiền</h3>
-
             <input
               placeholder="Tên người nhận"
               value={withdrawName}
               onChange={(e) => setWithdrawName(e.target.value)}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
-
             <input
               type="number"
               placeholder="Số tiền"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
-
             <input
               placeholder="Số tài khoản"
               value={withdrawAccount}
               onChange={(e) => setWithdrawAccount(e.target.value)}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
-
             <textarea
               placeholder="Ghi chú"
               value={withdrawNote}
               onChange={(e) => setWithdrawNote(e.target.value)}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
-
             <div className="flex gap-3">
-              <Button className="flex-1 bg-red-600" onClick={handleWithdrawal}>
+              <Button className="flex-1 bg-red-600 hover:bg-red-700" onClick={handleWithdrawal}>
                 Rút tiền
               </Button>
               <Button variant="outline" onClick={() => setShowWithdrawModal(false)}>
                 Hủy
               </Button>
             </div>
-
           </Card>
         </div>
       )}

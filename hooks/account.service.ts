@@ -65,6 +65,40 @@ export const AccountService = {
     return res.data.data;
   },
 
+  fortgotPassword: async (payload: any): Promise<any> => {
+    const res = await api.post<ApiResponse<any>>(
+      `/auth/forgot-password`,
+      payload,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  resetPassword: async (payload: any): Promise<any> => {
+    const res = await api.post<ApiResponse<any>>(
+      `/auth/reset-password`,
+      payload,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // UPDATE ACCOUNT
   updateAccount: async (
     accountId: string,

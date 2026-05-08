@@ -119,6 +119,22 @@ export const ProductService = {
     }
   },
 
+  async getProvinces(): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.get(`/ghn/provinces`);
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
   // GET BY VENDOR_ID
   getByVendorId: async (
     vendorId: string,

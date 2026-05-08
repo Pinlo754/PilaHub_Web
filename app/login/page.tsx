@@ -1,47 +1,95 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getProfile, login } from '@/hooks/auth.service'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function VendorLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  
+  // State quản lý lỗi và thông báo
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [verifiedSuccess, setVerifiedSuccess] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // CẬP NHẬT: Tự động bắt tham số từ URL khi chuyển hướng từ trang OTP về
+  useEffect(() => {
+    // 1. Kiểm tra trạng thái xác thực thành công
+    if (searchParams.get('verified') === 'true') {
+      setVerifiedSuccess('Xác thực thành công, mời bạn đăng nhập lại!')
+    }
+
+    // 2. Tự động fill email nếu có tham số email trên URL
+    const urlEmail = searchParams.get('email')
+    if (urlEmail) {
+      setEmail(decodeURIComponent(urlEmail))
+    }
+  }, [searchParams])
+
+  // Hàm validate phía client
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email không được để trống'
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        newErrors.email = 'Email không đúng định dạng'
+      }
+    }
+
+    if (!password) {
+      newErrors.password = 'Mật khẩu không được để trống'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setApiError(null)
+    setVerifiedSuccess(null) 
 
+    if (!validateForm()) return
+
+    setIsLoading(true)
     const res = await login({ email, password })
 
     if (res.ok) {
       const profileRes = await getProfile()
 
       if (!profileRes.ok || !profileRes.data) {
-        alert('Không lấy được thông tin người dùng')
+        setApiError('Không lấy được thông tin người dùng sau khi đăng nhập')
+        setIsLoading(false)
         return
       }
 
       const role = profileRes.data.role
-
       console.log('Role:', role)
+      setIsLoading(false)
 
-      // ✅ điều hướng theo role
       if (role === 'VENDOR') {
         router.push('/vendor/dashboard')
       } else if (role === 'ADMIN') {
         router.push('/')
       } else {
-        router.push('/vendor/dashboard') // fallback
+        router.push('/vendor/dashboard')
       }
     } else {
-      console.error(res.error)
-      alert(res.error?.message || 'Đăng nhập thất bại')
+      setIsLoading(false)
+      setApiError(res.message || 'Tài khoản hoặc mật khẩu không chính xác')
     }
   }
 
@@ -57,7 +105,22 @@ export default function VendorLogin() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 space-y-5">
+          
+          {/* Thông báo Xác thực OTP thành công */}
+          {verifiedSuccess && (
+            <div className="p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm text-center font-medium shadow-sm">
+              {verifiedSuccess}
+            </div>
+          )}
+
+          {/* Thông báo lỗi đăng nhập từ API */}
+          {apiError && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center font-medium">
+              {apiError}
+            </div>
+          )}
+
           {/* Email */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -65,9 +128,15 @@ export default function VendorLogin() {
               type="email"
               placeholder="vendor@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (errors.email) setErrors(prev => ({ ...prev, email: '' }))
+              }}
               className="border-2 border-gray-200 hover:border-orange-200 focus:border-orange-500"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -78,7 +147,10 @@ export default function VendorLogin() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (errors.password) setErrors(prev => ({ ...prev, password: '' }))
+                }}
                 className="border-2 border-gray-200 hover:border-orange-200 focus:border-orange-500 pr-10"
               />
               <button
@@ -89,13 +161,16 @@ export default function VendorLogin() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
           </div>
 
           {/* Remember Me */}
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="rounded border-gray-300 accent-orange-500" />
-              <span className="text-sm text-gray-600">Nhớ mật khẩu</span>
+              <span className="text-sm text-gray-600 select-none">Nhớ mật khẩu</span>
             </label>
             <Link href="/vendor/forgot-password" className="text-sm text-orange-600 hover:text-orange-700">
               Quên mật khẩu?
@@ -105,9 +180,10 @@ export default function VendorLogin() {
           {/* Submit Button */}
           <Button
             type="submit"
+            disabled={isLoading}
             className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg transition-colors"
           >
-            Đăng nhập
+            {isLoading ? 'Đang xử lý...' : 'Đăng nhập'}
           </Button>
         </form>
 

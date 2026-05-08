@@ -6,69 +6,23 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { OrderService } from '@/hooks/order.service'
-import { useRouter } from 'next/navigation'
-
-const mockOrder = {
-  id: "ORD001",
-  customer: {
-    name: "Nguyễn Văn A",
-    phone: "0123456789",
-    address: "Vinhomes Grand Park, Quận 9, TP. Thủ Đức"
-  },
-  paymentMethod: "PilaPay",
-  status: "Chờ xác nhận",
-  subtotal: 400000,
-  shippingFee: 50000,
-  total: 450000,
-  orderTime: "07/12/2025 20h00",
-  paymentTime: "07/12/2025 20h10",
-  deliveryTime: "10/12/2026 10h28",
-  items: [
-    {
-      id: "1",
-      name: "Thảm yoga",
-      variant: "173x61, Đỏ",
-      quantity: 1,
-      price: 100000,
-      imageUrl: "",
-      shipmentId: ""
-    },
-    {
-      id: "2",
-      name: "Dây kháng lực",
-      variant: "Medium",
-      quantity: 2,
-      price: 150000,
-      imageUrl: "",
-      shipmentId: ""
-    }
-  ]
-}
+import { ShippingModal } from '@/components/ShippingModal'
 
 export default function OrderDetails() {
-
   const params = useParams()
   const id = params?.id as string
   const router = useRouter()
 
   const [order, setOrder] = useState<any>(null)
+  const [isShipModalOpen, setIsShipModalOpen] = useState(false)
 
   const shipmentOptions = [
-    'READY_TO_PICK',
-    'PICKING',
-    'PICKED',
-    'STORING',
-    'TRANSPORTING',
-    'DELIVERING',
-    'DELIVERED',
-    'DELIVERY_FAIL',
-    'RETURN',
-    'RETURNING',
-    'RETURNED',
-    'CANCELLED',
+    'READY_TO_PICK', 'PICKING', 'PICKED', 'STORING', 'TRANSPORTING',
+    'DELIVERING', 'DELIVERED', 'DELIVERY_FAIL', 'RETURN', 'RETURNING',
+    'RETURNED', 'CANCELLED',
   ]
 
   const mapStatus = (status: string) => {
@@ -84,41 +38,26 @@ export default function OrderDetails() {
     }
   }
 
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleString('vi-VN')
+  const formatDate = (date: string) => new Date(date).toLocaleString('vi-VN')
 
   // ================= FETCH =================
   const fetchOrder = async () => {
     const res = await OrderService.getOrderById(id)
-
     if (res.success && res.data) {
       const o = res.data
-
       const mapped = {
         id: o.orderNumber,
-
-        customer: {
-          name: o.recipientName,
-          phone: o.recipientPhone,
-          address: o.shippingAddress,
-        },
-
+        customer: { name: o.recipientName, phone: o.recipientPhone, address: o.shippingAddress },
         paymentMethod: o.paymentMethod,
         status: mapStatus(o.status),
-
-        shipmentStatus: o.shipments?.[0]?.status, // ✅ FIX
-        shipmentId: o.shipments?.[0]?.shipmentId, // ✅ FIX
-
+        shipmentStatus: o.shipments?.[0]?.status,
+        shipmentId: o.shipments?.[0]?.shipmentId,
         subtotal: o.totalAmount - o.shippingFee,
         shippingFee: o.shippingFee,
         total: o.totalAmount,
-
         orderTime: formatDate(o.createdAt),
         paymentTime: o.paidAt ? formatDate(o.paidAt) : 'Chưa thanh toán',
-        deliveryTime: o.shipments?.[0]?.deliveredAt
-          ? formatDate(o.shipments[0].deliveredAt)
-          : 'Chưa giao',
-
+        deliveryTime: o.shipments?.[0]?.deliveredAt ? formatDate(o.shipments[0].deliveredAt) : 'Chưa giao',
         items: o.orderDetails.map((item: any) => ({
           id: item.orderDetailId,
           name: item.productName,
@@ -126,9 +65,9 @@ export default function OrderDetails() {
           price: item.unitPrice,
           imageUrl: item.productImageUrl,
           installationRequest: item.installationRequest,
+          variant: item.variant // Giả định có trường này
         })),
       }
-
       setOrder(mapped)
     }
   }
@@ -142,14 +81,8 @@ export default function OrderDetails() {
   const hasInstallation = order.items?.some((i: any) => i.installationRequest)
 
   // ================= ACTION =================
-
   const updateStatus = async (status: string) => {
     await OrderService.updateStatus(id, status)
-    await fetchOrder()
-  }
-
-  const createShipment = async () => {
-    await OrderService.createShipment(id)
     await fetchOrder()
   }
 
@@ -157,6 +90,23 @@ export default function OrderDetails() {
     await OrderService.updateShipment(order.shipmentId, status)
     await fetchOrder()
   }
+
+  const handleCreateShipment = async (payload: any) => {
+    // Payload từ Modal gửi lên: { type: 'SELF' | 'GHN', ...others }
+    const shipmentId = order.shipmentId;
+
+    if (!shipmentId) {
+      console.error("No shipment ID found for this order");
+      return;
+    }
+
+    await OrderService.createShipmentProvider(shipmentId, payload);
+
+    await updateStatus('READY')
+    setIsShipModalOpen(false)
+    await fetchOrder()
+  }
+
   return (
     <div className="flex h-screen bg-orange-50">
       <VendorSidebar />
@@ -164,96 +114,50 @@ export default function OrderDetails() {
         <VendorHeader title="Chi tiết đơn hàng" />
         <div className="flex-1 overflow-auto">
           <div className="p-6 space-y-6">
-            {/* Back Button */}
             <div className="flex justify-between items-center">
               <Link href="/vendor/orders" className="flex items-center gap-2 text-orange-600">
-                <ChevronLeft size={20} />
-                Quay lại
+                <ChevronLeft size={20} /> Quay lại
               </Link>
 
               <div className="flex gap-3">
-
-                {/* ===== KHÔNG LẮP ĐẶT ===== */}
-                {!hasInstallation && (
+                {/* Các nút xử lý đơn hàng */}
+                {order.status === 'Chờ xác nhận' && (
                   <>
-                    {order.status === 'Chờ xác nhận' && (
-                      <>
-                        <Button variant="destructive" onClick={() => updateStatus('CANCELLED')}>
-                          Hủy đơn hàng
-                        </Button>
-                        <Button onClick={() => updateStatus('CONFIRMED')}>
-                          Xác nhận đơn hàng
-                        </Button>
-                      </>
-                    )}
-
-                    {order.status === 'Đã xác nhận' && (
-                      <Button onClick={() => updateStatus('READY')}>
-                        Đã đóng gói xong
-                      </Button>
-                    )}
-
-                    {order.status === 'Đã đóng gói' && (
-                      <Button
-                        onClick={async () => {
-                          await createShipment()
-                          await updateStatus('SHIPPED')
-                        }}
-                      >
-                        Bàn giao vận chuyển
-                      </Button>
-                    )}
+                    <Button variant="destructive" onClick={() => updateStatus('CANCELLED')}>Hủy đơn hàng</Button>
+                    <Button onClick={() => updateStatus('CONFIRMED')}>Xác nhận đơn hàng</Button>
                   </>
                 )}
 
-                {/* ===== CÓ LẮP ĐẶT ===== */}
-                {hasInstallation && (
-                  <>
-                    {order.status === 'Chờ xác nhận' && (
-                      <>
-                        <Button variant="destructive" onClick={() => updateStatus('CANCELLED')}>
-                          Hủy đơn hàng
-                        </Button>
-                        <Button onClick={() => updateStatus('CONFIRMED')}>
-                          Xác nhận đơn hàng
-                        </Button>
-                      </>
-                    )}
-
-                    {order.status === 'Đã xác nhận' && (
-                      <Button onClick={() => updateStatus('READY')}>
-                        Đã đóng gói xong
-                      </Button>
-                    )}
-
-                    {order.status === 'Đã đóng gói' && (
-                      <Button
-                        onClick={async () => {
-                          await createShipment()
-                          await updateStatus('SHIPPED')
-                        }}
-                      >
-                        Tự vận chuyển
-                      </Button>
-                    )}
-
-                    {/* ✅ SAU SHIPPED → DROPDOWN */}
-                    {order.status === 'Đang vận chuyển' && order.shipmentStatus && (
-                      <select
-                        value={order.shipmentStatus}
-                        onChange={(e) => updateShipmentStatus(e.target.value)}
-                        className="h-14 border-2 border-orange-200 rounded-lg px-3"
-                      >
-                        {shipmentOptions.map((st) => (
-                          <option key={st} value={st}>
-                            {st}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </>
+                {order.status === 'Đã xác nhận' && (
+                  <div className="flex gap-2">
+                    <Button onClick={() => setIsShipModalOpen(true)}>
+                      Chọn phương thức vận chuyển
+                    </Button>
+                  </div>
                 )}
 
+                {/* Nút chung cho cả 2 loại: Bàn giao vận chuyển */}
+                {order.status === 'Đã đóng gói' && (
+                  <Button onClick={() => updateStatus('SHIPPED')}>
+                    Bàn giao vận chuyển
+                  </Button>
+                )}
+
+                {/* ✅ SAU SHIPPED → DROPDOWN */}
+                {order.status === 'Đang vận chuyển' && order.shipmentStatus && (
+                  <select
+                    value={order.shipmentStatus}
+                    onChange={(e) => updateShipmentStatus(e.target.value)}
+                    className="h-14 border-2 border-orange-200 rounded-lg px-3"
+                  >
+                    {shipmentOptions.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <div />
               </div>
             </div>
 
@@ -376,6 +280,11 @@ export default function OrderDetails() {
                   </span>
 
                 </Card>
+                <ShippingModal
+                  isOpen={isShipModalOpen}
+                  onClose={() => setIsShipModalOpen(false)}
+                  onConfirm={handleCreateShipment}
+                />
               </div>
             </div>
           </div>

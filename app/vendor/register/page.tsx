@@ -20,56 +20,69 @@ export default function VendorRegister() {
   })
   const router = useRouter()
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [apiError, setApiError] = useState<string | null>(null)
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }))
+    if (apiError) setApiError(null)
   }
 
-  const handleRegister = async  (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setApiError(null)
 
-    if (!validate()) return
+  if (!validate()) return
 
-    console.log('Register with:', formData)
-    const res = await registerVendor(formData)
+  // KHÔNG CẦN TRY...CATCH NỮA! Service đã lo hết lỗi
+  const res = await registerVendor(formData)
 
-    if(res) {
-      router.push('/vendor/dashboard')
+  if (res.ok) {
+    // Thành công (Tương ứng API 201 Created sạch sẽ)
+    router.push('/vendor/verify-otp?email=' + formData.email)
+  } else {
+    // Thất bại: Giữ nguyên state form và check errorCode từ Service trả về
+    if (res.errorCode === 'DUPLICATE_ACCOUNT') {
+      setApiError('Email hoặc Số điện thoại đã tồn tại')
+    } else {
+      setApiError(res.message) // Hiển thị câu thông báo lỗi mặc định từ hệ thống
     }
   }
+}
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.email) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email không được để trống'
     }
 
-    if (!formData.phoneNumber) {
+    if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = 'Số điện thoại không được để trống'
     }
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+
     if (!formData.password) {
       newErrors.password = 'Mật khẩu không được để trống'
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password = 'Mật khẩu phải từ 8 ký tự trở lên, bao gồm ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
     }
 
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu'
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu không khớp'
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp'
     }
 
     if (!formData.agreeTerms) {
-      newErrors.agreeTerms = 'Bạn phải đồng ý điều khoản'
+      newErrors.agreeTerms = 'Bạn phải đồng ý với điều khoản dịch vụ'
     }
 
     setErrors(newErrors)
-
     return Object.keys(newErrors).length === 0
   }
 
@@ -87,6 +100,12 @@ export default function VendorRegister() {
 
         {/* Form */}
         <form onSubmit={handleRegister} className="bg-white rounded-2xl shadow-lg p-8 space-y-4">
+          
+          {apiError && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center font-medium">
+              {apiError}
+            </div>
+          )}
 
           {/* Email */}
           <div className="space-y-2">
@@ -115,7 +134,7 @@ export default function VendorRegister() {
               onChange={handleChange}
               className="border-2 border-gray-200 hover:border-orange-200 focus:border-orange-500"
             />
-            {errors.phone && (
+            {errors.phoneNumber && (
               <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
             )}
           </div>
@@ -140,6 +159,9 @@ export default function VendorRegister() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {errors.password && (
+              <p className="text-red-500 text-sm max-w-xs leading-relaxed">{errors.password}</p>
+            )}
           </div>
 
           {/* Confirm Password */}
@@ -203,7 +225,7 @@ export default function VendorRegister() {
         {/* Sign In Link */}
         <p className="text-center mt-6 text-gray-600">
           Đã có tài khoản?{' '}
-          <Link href="/vendor/login" className="text-orange-600 font-semibold hover:text-orange-700">
+          <Link href="/login" className="text-orange-600 font-semibold hover:text-orange-700">
             Đăng nhập
           </Link>
         </p>

@@ -7,8 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { useFirebaseUpload } from '@/hooks/useFirebaseUpload'
 import { VendorService } from '@/hooks/vendor.service'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+
 
 export default function VendorRegister() {
+    const router = useRouter()
+    const [isLoading, setIsLoading] = useState(false) // Quản lý trạng thái nút submit
+
     const { uploadFile, loading, progress } = useFirebaseUpload()
 
     const [formData, setFormData] = useState({
@@ -40,9 +46,31 @@ export default function VendorRegister() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setIsLoading(true)
 
-        console.log('Submit:', formData)
-        await VendorService.createVendor(formData)
+        try {
+            console.log('Submit:', formData)
+            const res = await VendorService.createVendor(formData)
+
+            // Giả sử API của bạn trả về { success: true } hoặc quăng lỗi nếu thất bại
+            if (res?.success || res) {
+                // 1. Hiển thị thông báo thành công
+                toast.success('Đăng ký tài khoản Vendor thành công!', {
+                    description: 'Hệ thống đang đưa bạn đến trang Dashboard...',
+                    duration: 2000,
+                })
+
+                // 2. Chờ 2 giây để Toast hiển thị rồi mới điều hướng
+                setTimeout(() => {
+                    router.push('/vendor/dashboard')
+                }, 2000)
+            }
+        } catch (error: any) {
+            console.error('Lỗi khi đăng ký Vendor:', error)
+            // Hiển thị toast lỗi nếu API thất bại
+            toast.error(error?.message || 'Đăng ký thất bại. Vui lòng thử lại!')
+            setIsLoading(false) // Tắt loading để user có thể bấm lại nếu lỗi
+        }
     }
 
     return (
@@ -171,8 +199,9 @@ export default function VendorRegister() {
                 <Button
                     type="submit"
                     className="w-full bg-orange-600 text-white py-3"
+                    disabled={isLoading}
                 >
-                    Đăng ký Vendor
+                    {isLoading ? 'Đang xử lý...' : 'Đăng ký Vendor'}
                 </Button>
             </form>
         </div>

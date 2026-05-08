@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Upload, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/header'
 import { Sidebar } from '@/components/sidebar'
 import { useParams } from 'next/navigation'
 import { WalletService } from '@/hooks/wallet.service'
 import { getProfileById, getTraineeById, getVendorById } from '@/hooks/auth.service'
+import { useFirebaseUpload } from '@/hooks/useFirebaseUpload'
+
 interface WithdrawalRequest {
   walletWithdrawalId: string
   accountId: string
@@ -26,25 +28,6 @@ interface WithdrawalRequest {
   processedAt: string | null
   completedAt: string | null
   updatedAt: string | null
-}
-
-const withdrawal: WithdrawalRequest = {
-  walletWithdrawalId: 'e28afde8-9467-4395-a011-a0da916af333',
-  accountId: '96c3c3ca-bafa-4deb-bf7d-cf1f1055b681',
-  recipientName: 'ntp chu ai',
-  bankAccountNumber: '1021950955',
-  bankCode: 'bidv',
-  bankName: 'Ngân hàng TMCP Đầu tư và Phát triển Việt Nam',
-  bankLogo: 'https://example.com/logo.png',
-  amount: 1000000,
-  status: 'PENDING',
-  note: 'abc def',
-  adminNote: null,
-  processedBy: null,
-  requestedAt: '2026-03-17T20:23:51.479371Z',
-  processedAt: null,
-  completedAt: null,
-  updatedAt: null,
 }
 
 function formatCurrency(amount: number) {
@@ -108,6 +91,8 @@ export default function WithdrawalDetailPage() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [vendorProfile, setVendorProfile] = useState<VendorProfile | null>(null)
   const [traineeProfile, setTraineeProfile] = useState<TraineeProfile | null>(null)
+  const { uploadFile, progress, loading: isUploading } = useFirebaseUpload()
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -121,13 +106,34 @@ export default function WithdrawalDetailPage() {
   }
 
   const handleApprove = async () => {
+    if (!receiptImage) {
+      alert('Vui lòng chọn hình ảnh biên lai trước khi xác nhận.')
+      return
+    }
+
     setIsProcessing(true)
-    await WalletService.completeWithdrawal(id);
-    fetchDetail()
-    setTimeout(() => {
+
+    try {
+      const receiptUrl = await uploadFile(receiptImage, 'withdrawals')
+
+      const approveRes = await WalletService.approvedWithdrawal(id, { adminNote })
+      if (!approveRes.success) {
+        throw new Error(approveRes.message || 'Không thể duyệt yêu cầu')
+      }
+
+      const completeRes = await WalletService.completeWithdrawal(id, { receiptUrl })
+      if (!completeRes.success) {
+        throw new Error(completeRes.message || 'Không thể hoàn tất yêu cầu')
+      }
+
+      await fetchDetail()
       alert('Hoàn tất yêu cầu rút tiền!')
+    } catch (error: any) {
+      console.error(error)
+      alert(error?.message || 'Có lỗi xảy ra khi xử lý yêu cầu rút tiền.')
+    } finally {
       setIsProcessing(false)
-    }, 1500)
+    }
   }
 
   const handleReject = async () => {
@@ -294,7 +300,7 @@ export default function WithdrawalDetailPage() {
                   <h3 className="text-lg font-bold text-orange-700 mb-4">Lịch Sử</h3>
                   <div className="space-y-4">
                     <div className="flex gap-4">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-orange-500 flex-shrink-0"></div>
+                      <div className="w-2 h-2 mt-2 rounded-full bg-orange-500 shrink-0"></div>
                       <div>
                         <div className="font-semibold text-gray-800">Yêu cầu được tạo</div>
                         <div className="text-sm text-gray-600">{formatDate(withdrawal.requestedAt)}</div>
@@ -302,7 +308,7 @@ export default function WithdrawalDetailPage() {
                     </div>
                     {withdrawal.processedAt && (
                       <div className="flex gap-4">
-                        <div className="w-2 h-2 mt-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                        <div className="w-2 h-2 mt-2 rounded-full bg-green-500 shrink-0"></div>
                         <div>
                           <div className="font-semibold text-gray-800">Thời gian xử lý</div>
                           <div className="text-sm text-gray-600">{formatDate(withdrawal.processedAt)}</div>
@@ -346,6 +352,16 @@ export default function WithdrawalDetailPage() {
                         <div className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
                           <img src={receiptPreview} alt="Receipt preview" className="w-full h-full object-contain" />
                         </div>
+                      </div>
+                    )}
+
+                    {isUploading && (
+                      <div className="mb-6">
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Đang tải biên lai</label>
+                        <div className="w-full rounded-full bg-orange-100 overflow-hidden h-3">
+                          <div className="h-3 bg-orange-500" style={{ width: `${progress}%` }} />
+                        </div>
+                        <div className="text-xs text-gray-500 mt-2">{Math.round(progress)}% hoàn thành</div>
                       </div>
                     )}
 
