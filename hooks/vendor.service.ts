@@ -103,4 +103,38 @@ export const VendorService = {
 
     return res.data.data;
   },
+
+ // UNVERIFY VENDOR
+  unverifyVendor: async (vendorId: string): Promise<VendorType> => {
+    const res = await api.patch<ApiResponse<VendorType>>(
+      `/vendors/${vendorId}/unverify`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+  
+   // SEARCH BY NAME
+  searchByName: async (q: string): Promise<VendorType[]> => {
+    const res = await api.get<ApiResponse<VendorType[]>>(`/vendors/search`, {
+      params: { q },
+    });
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
 };

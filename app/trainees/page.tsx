@@ -32,6 +32,7 @@ export default function TraineesPage() {
     confirmState,
     isConfirmOpen,
     closeConfirm,
+    startIndex,
   } = useTrainees();
 
   return (
@@ -41,7 +42,7 @@ export default function TraineesPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Tài khoản" />
+        <Header title="Tài khoản" iconName="accounts" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
@@ -54,6 +55,7 @@ export default function TraineesPage() {
                 accounts={paginated}
                 onPressAccount={openDetailModal}
                 deleteTrainee={deleteTrainee}
+                startIndex={startIndex}
               />
             </div>
 

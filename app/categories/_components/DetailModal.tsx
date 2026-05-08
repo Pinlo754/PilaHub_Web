@@ -50,8 +50,9 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   category?: CategoryEntity | null;
   allCategories: CategoryEntity[];
-  onCreate: (payload: CreateCategoryReq) => void;
-  onUpdate: (categoryId: string, payload: UpdateCategoryReq) => void;
+  onCreate: (payload: CreateCategoryReq) => Promise<void>;
+  onUpdate: (categoryId: string, payload: UpdateCategoryReq) => Promise<void>;
+  // onDelete: (categoryId: string, name: string) => void;
 };
 
 const DetailModal = ({
@@ -61,6 +62,7 @@ const DetailModal = ({
   allCategories,
   onCreate,
   onUpdate,
+  // onDelete,
 }: Props) => {
   const isEditMode = !!category;
 
@@ -120,7 +122,7 @@ const DetailModal = ({
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const allTouched = Object.keys(form).reduce(
       (acc, k) => ({ ...acc, [k]: true }),
       {} as Record<keyof CategoryForm, boolean>,
@@ -139,12 +141,12 @@ const DetailModal = ({
     };
 
     if (isEditMode && category) {
-      onUpdate(category.categoryId, {
+      await onUpdate(category.categoryId, {
         ...payload,
         active: form.active,
       } as UpdateCategoryReq);
     } else {
-      onCreate(payload as CreateCategoryReq);
+      await onCreate(payload as CreateCategoryReq);
     }
   };
 
@@ -155,7 +157,7 @@ const DetailModal = ({
   };
 
   const handleSubCreate = async (payload: CreateCategoryReq): Promise<void> => {
-    onCreate(payload);
+    await onCreate(payload);
     await refreshSubcategories();
   };
 
@@ -163,9 +165,14 @@ const DetailModal = ({
     id: string,
     payload: UpdateCategoryReq,
   ): Promise<void> => {
-    onUpdate(id, payload);
+    await onUpdate(id, payload);
     await refreshSubcategories();
   };
+
+  // const handleSubDelete = (subId: string, name: string) => {
+  //   onDelete(subId, name);
+  //   setTimeout(() => refreshSubcategories(), 500);
+  // };
 
   useEffect(() => {
     if (open) {

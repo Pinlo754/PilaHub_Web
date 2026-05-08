@@ -3,6 +3,7 @@ import CourseRow from "./CourseRow";
 
 type Props = {
   courses: CourseType[];
+  startIndex: number;
   onRowClick: (courseId: string) => void;
   onToggleStatus: (courseId: string, currentActive: boolean) => void;
   onDelete: (courseId: string, courseName: string) => void;
@@ -10,6 +11,7 @@ type Props = {
 
 const CourseTable = ({
   courses,
+  startIndex,
   onRowClick,
   onDelete,
   onToggleStatus,
@@ -18,6 +20,9 @@ const CourseTable = ({
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
+          <th className="text-center py-3 px-4 font-semibold text-orange-700 w-14">
+            STT
+          </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Mã
           </th>
@@ -45,11 +50,12 @@ const CourseTable = ({
         </tr>
       </thead>
       <tbody>
-        {courses.map((course) => {
+        {courses.map((course, idx) => {
           return (
             <CourseRow
               key={course.courseId}
               course={course}
+              index={startIndex + idx + 1}
               onRowClick={onRowClick}
               onToggleStatus={onToggleStatus}
               onDelete={onDelete}

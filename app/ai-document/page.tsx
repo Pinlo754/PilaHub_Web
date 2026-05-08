@@ -26,13 +26,13 @@ export default function AiDocumentsPage() {
     downloadFile,
     deleteFile,
     roadmapStatus,
+    roadmapReviewStatus,
     scoringStatus,
     workoutStatus,
     checkingSection,
-    activeSection,
-    setActiveSection,
+    activeSections,
+    toggleSection,
     uploadingSection,
-    checkSectionStatus,
     uploadSectionFile,
     downloadSectionFile,
     confirmState,
@@ -49,24 +49,22 @@ export default function AiDocumentsPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Tài liệu AI" />
+        <Header title="Tài liệu AI" iconName="aiDocument" />
 
         <main className="flex-1 overflow-auto p-6">
-          {/* Reference Section Cards */}
           <Stats
             roadmapStatus={roadmapStatus}
+            roadmapReviewStatus={roadmapReviewStatus}
             scoringStatus={scoringStatus}
             workoutStatus={workoutStatus}
             checkingSection={checkingSection}
-            activeSection={activeSection}
+            activeSections={activeSections}
             uploadingSection={uploadingSection}
-            onCheck={checkSectionStatus}
+            onToggle={toggleSection}
             onUpload={uploadSectionFile}
             onDownload={downloadSectionFile}
-            setActiveSection={setActiveSection}
           />
 
-          {/* Documents Table */}
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
             <div className="overflow-x-auto">
               <AiDocumentTable
@@ -87,7 +85,6 @@ export default function AiDocumentsPage() {
         </main>
       </div>
 
-      {/* Detail Modal */}
       {selectedDocument && (
         <DetailModal
           key={selectedDocument.name}
@@ -102,7 +99,6 @@ export default function AiDocumentsPage() {
         />
       )}
 
-      {/* Confirm Dialog */}
       {confirmState && (
         <ConfirmDialog
           open={isConfirmOpen}
@@ -115,7 +111,6 @@ export default function AiDocumentsPage() {
         />
       )}
 
-      {/* Toast */}
       <Toast toasts={toasts} onRemove={removeToast} />
     </div>
   );

@@ -19,10 +19,10 @@ export function Dashboard() {
       {isLoading && <LoadingOverlay />}
       <div className="p-6">
         {/* Top Section with Title and Date Picker */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Tổng quan</h2>
-          {/* <DateRangePicker /> */}
-        </div>
+        {/* <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Tổng quan</h2> */}
+        {/* <DateRangePicker /> */}
+        {/* </div> */}
 
         {/* Stats Cards */}
         <StatsCards dashboard={dashboard} />

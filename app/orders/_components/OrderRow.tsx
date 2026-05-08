@@ -2,14 +2,16 @@ import { formatLocalDateTime } from "@/utils/day";
 import { formatVND } from "@/utils/number";
 import { OrderType } from "@/utils/OrderType";
 import { getOrderStatusConfig } from "@/utils/uiMapper";
+import { Banknote, CheckCircle2, XCircle } from "lucide-react";
 
 type Props = {
   order: OrderType;
   onPressOrder: (order: OrderType) => void;
   onPayout: (orderId: string) => void;
+  index: number;
 };
 
-const OrderRow = ({ order, onPressOrder, onPayout }: Props) => {
+const OrderRow = ({ order, onPressOrder, onPayout, index }: Props) => {
   const statusConfig = getOrderStatusConfig(order.status);
   const canPayout = order.status === "COMPLETED" && !order.paidOut;
 
@@ -18,42 +20,55 @@ const OrderRow = ({ order, onPressOrder, onPayout }: Props) => {
       onClick={() => onPressOrder(order)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-700 text-sm font-mono">{order.orderNumber}</td>
+      <td className="py-3 px-3 text-center text-gray-400 text-sm">{index}</td>
+      <td className="py-3 px-4 text-gray-700 text-sm font-mono">
+        {order.orderNumber}
+      </td>
       <td className="py-3 px-4 text-gray-700 text-sm">{order.recipientName}</td>
-      <td className="py-3 px-4 text-gray-700 text-sm">{formatVND(order.totalAmount)}</td>
-      <td className="py-3 px-4 text-sm">
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            order.paid
-              ? "bg-green-100 text-green-700"
-              : "bg-yellow-100 text-yellow-700"
-          }`}
-        >
-          {order.paid ? "Đã thanh toán" : "Chưa thanh toán"}
+      <td className="py-3 px-4 text-gray-700 text-sm">
+        {formatVND(order.totalAmount)}
+      </td>
+      <td className="py-1 px-4 text-center">
+        <span title={order.paid ? "Đã thanh toán" : "Chưa thanh toán"}>
+          {order.paid ? (
+            <CheckCircle2 size={18} className="text-green-500 inline" />
+          ) : (
+            <XCircle size={18} className="text-red-500 inline" />
+          )}
         </span>
       </td>
-      <td className="py-3 px-4">
+      <td className="py-3 px-4 text-center">
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.textColor}`}
         >
           {statusConfig.label}
         </span>
       </td>
-      <td className="py-3 px-4 text-gray-700 text-sm">
+      <td className="py-3 px-4 text-gray-700 text-sm text-center">
         {formatLocalDateTime(order.createdAt)}
       </td>
       <td
-        className="py-3 px-4"
+        className="py-1 px-4 text-center"
         onClick={(e) => e.stopPropagation()} // chặn mở modal khi bấm nút
       >
-        {canPayout && (
-          <button
-            onClick={() => onPayout(order.orderId)}
-            className="px-3 py-1 bg-orange-500 text-white text-xs rounded-md hover:bg-orange-600 transition-colors whitespace-nowrap"
-          >
-            Trả tiền
-          </button>
-        )}
+        <button
+          onClick={() => canPayout && onPayout(order.orderId)}
+          title={
+            canPayout
+              ? "Trả tiền nhà cung cấp"
+              : order.paidOut
+                ? "Đã trả tiền"
+                : "Chưa đủ điều kiện trả tiền"
+          }
+          disabled={!canPayout}
+          className={`p-1.5 rounded-md transition ${
+            canPayout
+              ? "text-orange-500 hover:text-orange-700 hover:bg-orange-50 bg-orange-100 cursor-pointer"
+              : "text-gray-300 cursor-not-allowed"
+          }`}
+        >
+          <Banknote size={20} />
+        </button>
       </td>
     </tr>
   );

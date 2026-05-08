@@ -117,7 +117,7 @@ const DetailModal = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="mr-auto"
+            className=""
           >
             Đóng
           </Button>

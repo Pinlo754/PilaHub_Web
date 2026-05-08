@@ -6,11 +6,17 @@ import { CheckCircle } from "lucide-react";
 
 type Props = {
   booking: CoachBookingType;
+  index: number;
   onPressBooking: (booking: CoachBookingType) => void;
   onMarkReady: (bookingId: string) => void;
 };
 
-const CoachBookingRow = ({ booking, onPressBooking, onMarkReady }: Props) => {
+const CoachBookingRow = ({
+  booking,
+  index,
+  onPressBooking,
+  onMarkReady,
+}: Props) => {
   const shortId = `${booking.id.slice(0, 6)}...`;
   const statusConfig = getBookingStatusConfig(booking.status);
   const typeConfig = getBookingTypeConfig(booking.bookingType);
@@ -20,6 +26,9 @@ const CoachBookingRow = ({ booking, onPressBooking, onMarkReady }: Props) => {
       onClick={() => onPressBooking(booking)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
+      <td className="py-3 px-4 text-center text-gray-500 font-medium">
+        {index}
+      </td>
       <td className="py-3 px-4 text-gray-500">{shortId}</td>
       <td className="py-3 px-4 text-gray-700 font-medium">
         {booking.trainee.fullName}

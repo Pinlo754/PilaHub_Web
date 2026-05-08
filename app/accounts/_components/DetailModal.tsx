@@ -214,7 +214,7 @@ const DetailModal = ({ open, onOpenChange, account, onSubmit }: Props) => {
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   account.emailVerified
                     ? "bg-green-100 text-green-700"
-                    : "bg-purple-100 text-purple-700"
+                    : "bg-yellow-100 text-yellow-700"
                 }`}
               >
                 {account.emailVerified ? "Đã xác thực" : "Chưa xác thực"}
@@ -256,10 +256,12 @@ const DetailModal = ({ open, onOpenChange, account, onSubmit }: Props) => {
 
           {/* ===== INFO (READONLY) ===== */}
           <div className="border-t pt-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Gói hiện tại</span>
-              <span>{account.activePackageType ?? "Chưa có"}</span>
-            </div>
+            {account.role === ROLE.Trainee && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Gói hiện tại</span>
+                <span>{account.activePackageType ?? "Chưa có"}</span>
+              </div>
+            )}
 
             <div className="flex justify-between">
               <span className="text-gray-500">Ngày tạo</span>

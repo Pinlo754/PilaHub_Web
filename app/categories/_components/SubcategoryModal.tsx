@@ -92,7 +92,7 @@ const SubcategoryModal = ({
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const allTouched = Object.keys(form).reduce(
       (acc, k) => ({ ...acc, [k]: true }),
       {} as Record<keyof CategoryForm, boolean>,
@@ -111,9 +111,9 @@ const SubcategoryModal = ({
     };
 
     if (isEditMode && subcategory) {
-      onUpdate(subcategory.categoryId, { ...payload });
+      await onUpdate(subcategory.categoryId, { ...payload });
     } else {
-      onCreate(payload as CreateCategoryReq);
+      await onCreate(payload as CreateCategoryReq);
     }
     onClose();
   };
@@ -126,7 +126,7 @@ const SubcategoryModal = ({
           description: subcategory.description ?? "",
           imageUrl: subcategory.imageUrl ?? "",
           categoryType: subcategory.categoryType,
-          parentCategoryId: subcategory.parentCategoryId,
+          parentCategoryId: parentCategoryId,
           active: subcategory.active,
         };
         setForm(init);
@@ -151,14 +151,14 @@ const SubcategoryModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg rounded-2xl">
+      <DialogContent className="!max-w-xl rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-orange-700">
             {isEditMode ? "Chi tiết danh mục con" : "Thêm danh mục con mới"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-y-auto max-h-[65vh] pr-1">
+        <div className="overflow-y-auto max-h-[70vh] p-1">
           <CategoryFormFields
             form={form}
             errors={errors}
@@ -167,6 +167,7 @@ const SubcategoryModal = ({
             parentCategories={parentOptions}
             handleChange={handleChange}
             handleBlur={handleBlur}
+            parentCategoryId={parentCategoryId}
           />
 
           {isEditMode && subcategory && (

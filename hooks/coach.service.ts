@@ -33,12 +33,53 @@ export const CoachService = {
     return res.data.data;
   },
 
+  // SEARCH BY NAME
+  searchByName: async (q: string): Promise<CoachType[]> => {
+    const res = await api.get<ApiResponse<CoachType[]>>(`/coaches/search`, {
+      params: { q },
+    });
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // GET FEEDBACKS BY COACH ID
   getFeedbacksByCoachId: async (
     coachId: string,
   ): Promise<FeedbackCoachType[]> => {
     const res = await api.get<ApiResponse<FeedbackCoachType[]>>(
       `/coach-feedbacks/coach/${coachId}`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // UPDATE PRICE PER HOUR
+  updatePricePerHour: async (
+    coachId: string,
+    pricePerHour: number,
+  ): Promise<CoachType> => {
+    const res = await api.patch<ApiResponse<CoachType>>(
+      `/coaches/${coachId}/price`,
+      null,
+      {
+        params: { pricePerHour },
+      },
     );
 
     if (!res.data.success) {

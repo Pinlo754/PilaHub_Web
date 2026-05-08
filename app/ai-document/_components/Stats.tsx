@@ -12,30 +12,21 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const ALLOWED_MIME_TYPES = [
-  "text/markdown",
-  "text/plain",
-  "application/pdf",
-  // Some browsers use these for .md files
-  "text/x-markdown",
-  "application/octet-stream",
-];
-
 const ALLOWED_EXTENSIONS = [".md", ".txt", ".pdf"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 const validateFile = (file: File): string | null => {
   const ext = "." + file.name.split(".").pop()?.toLowerCase();
   if (!ALLOWED_EXTENSIONS.includes(ext)) {
-    return `Định dạng không hợp lệ. Chỉ chấp nhận: Markdown (.md), Text (.txt), PDF (.pdf)`;
+    return `Định dạng không hợp lệ. Chỉ chấp nhận: Markdown (.md), Văn bản (.txt), PDF (.pdf)`;
   }
   if (file.size > MAX_SIZE_BYTES) {
-    return `File vượt quá giới hạn 10MB (hiện tại: ${(file.size / (1024 * 1024)).toFixed(1)}MB)`;
+    return `Tệp vượt quá giới hạn 10MB (hiện tại: ${(file.size / (1024 * 1024)).toFixed(1)}MB)`;
   }
   return null;
 };
 
-type SectionKey = "roadmap" | "scoring" | "workout";
+type SectionKey = "roadmap" | "roadmapReview" | "scoring" | "workout";
 
 type SectionConfig = {
   key: SectionKey;
@@ -46,67 +37,70 @@ type SectionConfig = {
 const SECTIONS: SectionConfig[] = [
   {
     key: "roadmap",
-    label: "Roadmap Reference",
+    label: "Tài liệu lộ trình",
     description: "Tài liệu tham chiếu lộ trình học tập",
   },
   {
+    key: "roadmapReview",
+    label: "Tài liệu đánh giá lộ trình",
+    description: "Tài liệu tham chiếu đánh giá lộ trình học tập",
+  },
+  {
     key: "scoring",
-    label: "Scoring Guideline",
+    label: "Hướng dẫn chấm điểm",
     description: "Hướng dẫn chấm điểm AI",
   },
   {
     key: "workout",
-    label: "Workout Feedback Reference",
-    description: "Tài liệu phản hồi bài tập",
+    label: "Tài liệu phản hồi bài tập",
+    description: "Tài liệu tham chiếu phản hồi bài tập",
   },
 ];
 
 type Props = {
   roadmapStatus: CheckFileRes | null;
+  roadmapReviewStatus: CheckFileRes | null;
   scoringStatus: CheckFileRes | null;
   workoutStatus: CheckFileRes | null;
   checkingSection: string | null;
-  activeSection: string | null;
+  activeSections: Set<string>;
   uploadingSection: string | null;
-  onCheck: (section: string) => void;
+  onToggle: (section: string) => void;
   onUpload: (section: string, file: File) => void;
   onDownload: (section: string) => void;
-  setActiveSection: (section: string | null) => void;
 };
 
 const getStatus = (
   key: SectionKey,
   roadmapStatus: CheckFileRes | null,
+  roadmapReviewStatus: CheckFileRes | null,
   scoringStatus: CheckFileRes | null,
   workoutStatus: CheckFileRes | null,
 ): CheckFileRes | null => {
   if (key === "roadmap") return roadmapStatus;
+  if (key === "roadmapReview") return roadmapReviewStatus;
   if (key === "scoring") return scoringStatus;
   return workoutStatus;
 };
 
 const Stats = ({
   roadmapStatus,
+  roadmapReviewStatus,
   scoringStatus,
   workoutStatus,
   checkingSection,
-  activeSection,
+  activeSections,
   uploadingSection,
-  onCheck,
+  onToggle,
   onUpload,
   onDownload,
-  setActiveSection,
 }: Props) => {
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
 
   const handleCardClick = (key: SectionKey) => {
-    if (activeSection === key) {
-      setActiveSection(null);
-      return;
-    }
     setFileErrors((prev) => ({ ...prev, [key]: "" }));
-    onCheck(key);
+    onToggle(key);
   };
 
   const handleFileChange = (
@@ -129,15 +123,16 @@ const Stats = ({
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-2 gap-4 mb-6 items-start">
       {SECTIONS.map(({ key, label, description }) => {
         const status = getStatus(
           key,
           roadmapStatus,
+          roadmapReviewStatus,
           scoringStatus,
           workoutStatus,
         );
-        const isActive = activeSection === key;
+        const isActive = activeSections.has(key);
         const isChecking = checkingSection === key;
         const isUploading = uploadingSection === key;
         const hasFile = status?.hasActiveDocument;
@@ -151,7 +146,7 @@ const Stats = ({
                 : "border-orange-200 hover:border-orange-300 hover:shadow-sm"
             }`}
           >
-            {/* Header - clickable */}
+            {/* Header — clickable */}
             <button
               className="w-full p-4 text-left flex items-start justify-between gap-2"
               onClick={() => handleCardClick(key)}
@@ -183,7 +178,7 @@ const Stats = ({
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${hasFile ? "bg-green-500" : "bg-gray-400"}`}
                       />
-                      {hasFile ? "Đang dùng" : "Chưa có file"}
+                      {hasFile ? "Đang dùng" : "Chưa có tệp"}
                     </div>
                   )}
                 </div>
@@ -199,7 +194,7 @@ const Stats = ({
               </div>
             </button>
 
-            {/* Expanded actions */}
+            {/* Expanded actions — chỉ mở section được click */}
             {isActive && status !== null && (
               <div className="px-4 pb-4 border-t border-orange-100 pt-3 space-y-3">
                 <div className="flex gap-2">
@@ -214,7 +209,7 @@ const Stats = ({
                     ) : (
                       <Upload size={13} />
                     )}
-                    {hasFile ? "Cập nhật file" : "Tải lên"}
+                    {hasFile ? "Cập nhật tệp" : "Tải lên"}
                   </button>
                   <input
                     ref={(el) => {
@@ -226,7 +221,7 @@ const Stats = ({
                     onChange={(e) => handleFileChange(key, e)}
                   />
 
-                  {/* Download - only when has file */}
+                  {/* Download — chỉ hiện khi có file */}
                   {hasFile && (
                     <button
                       onClick={() => onDownload(key)}
@@ -252,15 +247,15 @@ const Stats = ({
                     <span className="font-medium text-gray-500">
                       Định dạng:
                     </span>{" "}
-                    Markdown (.md), Text (.txt), PDF (.pdf)
+                    Markdown (.md), Văn bản (.txt), PDF (.pdf)
                   </div>
                   <div>
                     <span className="font-medium text-gray-500">Tối đa:</span>{" "}
-                    10MB — File hết hạn sau 48 giờ
+                    10MB — Tệp hết hạn sau 48 giờ
                   </div>
                   {hasFile && (
                     <div className="text-amber-500">
-                      ⚠ File hiện tại sẽ bị xoá trước khi tải lên file mới.
+                      ⚠ Tệp hiện tại sẽ bị xoá trước khi tải lên tệp mới.
                     </div>
                   )}
                 </div>

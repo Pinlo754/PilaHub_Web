@@ -1,13 +1,12 @@
 import { CategoryType } from "@/utils/CategoryType";
 import CategoryRow from "./CategoryRow";
 
-const PAGE_SIZE = 10;
-
 type Props = {
   categories: CategoryType[];
   onPressCategory: (category: CategoryType) => void;
   updateStatusCategory: (categoryId: string, active: boolean) => void;
   deleteCategory: (categoryId: string, name: string) => void;
+  startIndex: number;
 };
 
 const CategoryTable = ({
@@ -15,6 +14,7 @@ const CategoryTable = ({
   onPressCategory,
   updateStatusCategory,
   deleteCategory,
+  startIndex,
 }: Props) => {
   // Build a lookup map: id → name for resolving parent names
   const nameMap = Object.fromEntries(
@@ -25,13 +25,13 @@ const CategoryTable = ({
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
-          <th className="text-left py-3 px-4 font-semibold text-orange-700 w-32">
-            Mã
+          <th className="text-center py-3 px-4 font-semibold text-orange-700 w-32">
+            STT
           </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Tên danh mục
           </th>
-          <th className="text-left py-3 px-4 font-semibold text-orange-700">
+          <th className="text-center py-3 px-4 font-semibold text-orange-700">
             Danh mục cha
           </th>
           <th className="text-center py-3 px-4 font-semibold text-orange-700">
@@ -41,6 +41,9 @@ const CategoryTable = ({
             Trạng thái
           </th>
           <th className="text-center py-3 px-4 font-semibold text-orange-700">
+            Ngày tạo
+          </th>
+          <th className="text-center py-3 px-4 font-semibold text-orange-700">
             Hành động
           </th>
         </tr>
@@ -48,12 +51,12 @@ const CategoryTable = ({
       <tbody>
         {categories.length === 0 ? (
           <tr>
-            <td colSpan={6} className="py-10 text-center text-gray-400">
+            <td colSpan={7} className="py-10 text-center text-gray-400">
               Không có dữ liệu
             </td>
           </tr>
         ) : (
-          categories.map((cat) => (
+          categories.map((cat, idx) => (
             <CategoryRow
               key={cat.categoryId}
               category={cat}
@@ -66,6 +69,7 @@ const CategoryTable = ({
               onPressCategory={onPressCategory}
               updateStatusCategory={updateStatusCategory}
               deleteCategory={deleteCategory}
+              index={startIndex + idx + 1}
             />
           ))
         )}

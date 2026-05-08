@@ -45,7 +45,7 @@ export function RevenueChart({ data }: Props) {
         <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
         Tổng doanh thu
       </h3>
-      <ResponsiveContainer width="100%" height={530}>
+      <ResponsiveContainer width="100%" height={590}>
         <AreaChart data={chartData}>
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">

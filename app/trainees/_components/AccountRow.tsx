@@ -7,19 +7,24 @@ type Props = {
   account: TraineeType;
   onPressAccount: (account: TraineeType) => void;
   deleteTrainee: (traineeId: string, fullName: string) => void;
+  index: number;
 };
 
-const AccountRow = ({ account, onPressAccount, deleteTrainee }: Props) => {
+const AccountRow = ({
+  account,
+  onPressAccount,
+  deleteTrainee,
+  index,
+}: Props) => {
   const genderConfig = getGenderConfig(account.gender);
   const levelConfig = getWorkoutLevelConfig(account.workoutLevel);
-  const shortId = `${account.traineeId.slice(0, 6)}...`;
 
   return (
     <tr
       onClick={() => onPressAccount(account)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-500">{shortId}</td>
+      <td className="py-3 px-4 text-gray-500 text-center">{index}</td>
       <td className="py-3 px-4 flex justify-center">
         <img
           src={account.avatarUrl || "/default-logo.png"}

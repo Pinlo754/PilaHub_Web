@@ -44,6 +44,23 @@ export const AiDocumentService = {
     return res.data.data;
   },
 
+  // CHECK STATUS OF ROADMAP REVIEW REFERENCE
+  checkStatusOfRoadmapReviewReference: async (): Promise<CheckFileRes> => {
+    const res = await api.get<ApiResponse<CheckFileRes>>(
+      `/admin/ai-documents/roadmap-review-reference/status`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // CHECK STATUS OF SCORING GUIDELINE
   checkStatusOfScoringGuideline: async (): Promise<CheckFileRes> => {
     const res = await api.get<ApiResponse<any>>(
@@ -141,6 +158,35 @@ export const AiDocumentService = {
     return res.data.data;
   },
 
+  // UPLOAD ROADMAP REVIEW REFERENCE
+  uploadRoadmapReviewReference: async (
+    payload: UploadFileReq,
+  ): Promise<UploadFileRes> => {
+    const formData = new FormData();
+    formData.append("file", payload.file);
+
+    const res = await api.post<ApiResponse<UploadFileRes>>(
+      `/admin/ai-documents/roadmap-review-reference`,
+
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // UPLOAD SCORING GUIDELINE
   uploadScoringGuideline: async (
     payload: UploadFileReq,
@@ -198,71 +244,57 @@ export const AiDocumentService = {
   },
 
   // DOWNLOAD FILE
-  downloadFile: async (fileName: string): Promise<string> => {
-    const res = await api.get<ApiResponse<string>>(
-      `/admin/ai-documents/download/${fileName}`,
-    );
+  downloadFile: async (fileName: string): Promise<Blob> => {
+    const res = await api.get(`/admin/ai-documents/download/${fileName}`, {
+      responseType: "blob",
+    });
 
-    if (!res.data.success) {
-      throw {
-        type: "BUSINESS_ERROR",
-        message: res.data.message,
-        errorCode: res.data.errorCode,
-      };
-    }
-
-    return res.data.data;
+    return res.data;
   },
 
   // DOWNLOAD ROADMAP REFERENCE
-  downloadRoadmapReference: async (): Promise<string> => {
-    const res = await api.get<ApiResponse<string>>(
+  downloadRoadmapReference: async (): Promise<Blob> => {
+    const res = await api.get(
       `/admin/ai-documents/download-roadmap-reference`,
+      {
+        responseType: "blob",
+      },
     );
 
-    if (!res.data.success) {
-      throw {
-        type: "BUSINESS_ERROR",
-        message: res.data.message,
-        errorCode: res.data.errorCode,
-      };
-    }
+    return res.data;
+  },
 
-    return res.data.data;
+  // DOWNLOAD ROADMAP REVIEW REFERENCE
+  downloadRoadmapReviewReference: async (): Promise<Blob> => {
+    const res = await api.get(
+      `/admin/ai-documents/download-roadmap-review-reference`,
+      {
+        responseType: "blob",
+      },
+    );
+
+    return res.data;
   },
 
   // DOWNLOAD SCORING GUIDELINE
-  downloadScoringGuideline: async (): Promise<string> => {
-    const res = await api.get<ApiResponse<string>>(
-      `/admin/ai-documents/download-guideline`,
-    );
+  downloadScoringGuideline: async (): Promise<Blob> => {
+    const res = await api.get(`/admin/ai-documents/download-guideline`, {
+      responseType: "blob",
+    });
 
-    if (!res.data.success) {
-      throw {
-        type: "BUSINESS_ERROR",
-        message: res.data.message,
-        errorCode: res.data.errorCode,
-      };
-    }
-
-    return res.data.data;
+    return res.data;
   },
 
   // DOWNLOAD WORKOUT FEEDBACK REFERENCE
-  downloadWorkoutFeedbackReference: async (): Promise<string> => {
-    const res = await api.get<ApiResponse<string>>(
+  downloadWorkoutFeedbackReference: async (): Promise<Blob> => {
+    const res = await api.get(
       `/admin/ai-documents/download-workout-feedback-reference`,
+      {
+        responseType: "blob",
+      },
     );
 
-    if (!res.data.success) {
-      throw {
-        type: "BUSINESS_ERROR",
-        message: res.data.message,
-        errorCode: res.data.errorCode,
-      };
-    }
-
-    return res.data.data;
+    return res.data;
   },
 
   // DELETE FILE
@@ -286,6 +318,23 @@ export const AiDocumentService = {
   deleteRoadmapReference: async (fileName: string): Promise<any> => {
     const res = await api.delete<ApiResponse<any>>(
       `/admin/ai-documents/roadmap-reference/${fileName}`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // DELETE ROADMAP REVIEW REFERENCE
+  deleteRoadmapReviewReference: async (fileName: string): Promise<any> => {
+    const res = await api.delete<ApiResponse<any>>(
+      `/admin/ai-documents/roadmap-review-reference/${fileName}`,
     );
 
     if (!res.data.success) {

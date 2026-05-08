@@ -39,6 +39,28 @@ export const CategoryService = {
     return res.data.data;
   },
 
+  // SEARCH BY NAME
+  searchByName: async (name: string): Promise<CategoryType[]> => {
+    const res = await api.get<ApiResponse<CategoryType[]>>(
+      `/categories/search`,
+      {
+        params: {
+          name,
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // CREATE CATEGORY
   createCategory: async (payload: CreateCategoryReq): Promise<CategoryType> => {
     const res = await api.post<ApiResponse<CategoryType>>(

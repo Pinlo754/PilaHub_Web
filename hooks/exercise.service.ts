@@ -1,7 +1,8 @@
 import api from "./AxiosInstance";
 import { ApiResponse } from "@/utils/ApiResType";
+import { BodyPartType } from "@/utils/BodyPartType";
+import { LevelType } from "@/utils/CourseType";
 import {
-  BodyPartType,
   CreateExerciseReq,
   ExerciseType,
   UpdateExerciseReq,
@@ -42,6 +43,45 @@ export const ExerciseService = {
   getById: async (exerciseId: string): Promise<ExerciseType> => {
     const res = await api.get<ApiResponse<ExerciseType>>(
       `/exercises/${exerciseId}`,
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // SEARCH BY NAME
+  searchByName: async (name: string): Promise<ExerciseType[]> => {
+    const res = await api.get<ApiResponse<ExerciseType[]>>(
+      `/exercises/search`,
+      {
+        params: {
+          name,
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // GET BY DIFFICULTY LEVEL
+  getByLevel: async (level: LevelType): Promise<ExerciseType[]> => {
+    const res = await api.get<ApiResponse<ExerciseType[]>>(
+      `/exercises/difficulty/${level}`,
     );
 
     if (!res.data.success) {

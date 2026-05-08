@@ -13,6 +13,10 @@ import ProductTable from "./_components/ProductTable";
 import CertificateSection from "./_components/CertificateSection";
 import RatingSection from "./_components/RatingSection";
 import OrderSection from "./_components/OrderSection";
+import Toast from "@/components/Toast";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import ProductDetailModal from "./_components/ProductDetailModal";
+import OrderDetailModal from "./_components/OrderDetailModal";
 
 export default function SupplierDetailsPage() {
   // PARAM
@@ -30,6 +34,27 @@ export default function SupplierDetailsPage() {
     pagedOrders,
     productPage,
     totalOrderPages,
+    // product search
+    productSearchTerm,
+    handleProductSearch,
+    // product modal
+    selectedProduct,
+    productModalOpen,
+    handleOpenProductModal,
+    handleCloseProductModal,
+    // order modal
+    selectedOrder,
+    orderModalOpen,
+    handleOpenOrderModal,
+    handleCloseOrderModal,
+    // rule violation
+    handleUpdateRuleViolation,
+    // toast & confirm
+    toasts,
+    removeToast,
+    confirmState,
+    isConfirmOpen,
+    closeConfirm,
   } = useSupplierDetail({ vendorId: id });
 
   return (
@@ -47,34 +72,67 @@ export default function SupplierDetailsPage() {
             <span>Quay lại</span>
           </Link>
 
-          {/* Row 1: Vendor info + Revenue */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <VendorDetail vendor={vendor} />
-            <div className="col-span-2">
-              <RevenueSection />
-            </div>
-          </div>
-
-          {/* Row 2: Products + Orders (side by side, each scrolls internally) */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
-              <ProductTable
-                productPage={productPage}
-                currentPage={currentProductPage}
-                onPageChange={handleProductPageChange}
-              />
-            </div>
-            <div>
+            {/* Col 1: Vendor info + Order Section */}
+            <div className="col-span-1 flex flex-col gap-4">
+              <VendorDetail vendor={vendor} />
+              {/* Order Section */}
               <OrderSection
                 orders={pagedOrders}
                 currentPage={currentOrderPage}
                 totalPages={totalOrderPages}
                 onPageChange={handleOrderPageChange}
+                onRowClick={handleOpenOrderModal}
+              />
+              {/* <div className="col-span-2">
+              <RevenueSection />
+            </div> */}
+            </div>
+
+            {/* Col 2: Product */}
+            <div className="col-span-2">
+              <ProductTable
+                productPage={productPage}
+                currentPage={currentProductPage}
+                onPageChange={handleProductPageChange}
+                searchTerm={productSearchTerm}
+                onSearch={handleProductSearch}
+                onRowClick={handleOpenProductModal}
+                onUpdateRuleViolation={handleUpdateRuleViolation}
               />
             </div>
           </div>
         </main>
       </div>
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        open={productModalOpen}
+        onOpenChange={handleCloseProductModal}
+        product={selectedProduct}
+        onUpdateRuleViolation={handleUpdateRuleViolation}
+      />
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+        open={orderModalOpen}
+        onOpenChange={handleCloseOrderModal}
+        order={selectedOrder}
+      />
+
+      {/* Toast */}
+      <Toast toasts={toasts} onRemove={removeToast} />
+
+      {/* Confirm */}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={(open) => !open && closeConfirm()}
+        title={confirmState?.title ?? ""}
+        description={confirmState?.description}
+        confirmLabel={confirmState?.confirmLabel}
+        variant={confirmState?.variant}
+        onConfirm={confirmState?.onConfirm ?? (() => {})}
+      />
     </div>
   );
 }

@@ -38,6 +38,8 @@ export default function CoachesPage() {
     closeConfirm,
     feedbacks,
     createAccount,
+    startIndex,
+    updatePricePerHour,
   } = useCoaches();
 
   return (
@@ -47,7 +49,7 @@ export default function CoachesPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Tài khoản" />
+        <Header title="Tài khoản" iconName="accounts" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
@@ -62,6 +64,7 @@ export default function CoachesPage() {
             <div className="overflow-x-auto">
               <AccountTable
                 accounts={paginated}
+                startIndex={startIndex}
                 onPressAccount={openDetailModal}
                 updateStatusAccount={updateStatusAccount}
               />
@@ -84,6 +87,7 @@ export default function CoachesPage() {
           onOpenChange={(open) => !open && closeDetailModal()}
           coach={selectedAccount}
           feedbacks={feedbacks}
+          onUpdatePrice={updatePricePerHour}
         />
       )}
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AccountType,
   CreateAccountReq,
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/useToast";
 export const useAccounts = () => {
   // CONSTANT
   const SIZE = 10;
+  const DEBOUNCE_MS = 500;
 
   // STATE
   const [accounts, setAccounts] = useState<AccountType[]>([]);
@@ -27,16 +28,36 @@ export const useAccounts = () => {
 
   const { confirmState, isConfirmOpen, confirm, closeConfirm } = useConfirm();
   const { toasts, removeToast, showSuccess, showError } = useToast();
+
+  // REF
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // HELPER
+  const filterAdmins = (list: AccountType[]) =>
+    list.filter((a) => a.role !== "ADMIN");
+
   // API
-  const fetchAll = async () => {
+  const fetchAll = async (keyword?: string) => {
     setIsLoading(true);
     try {
       const res = await AccountService.getAll({
         page,
         size: SIZE,
       });
-      setAccounts(res.content);
-      setTotalPages(res.totalPages);
+      const filtered = filterAdmins(res.content);
+      if (keyword && keyword.trim() !== "") {
+        const lower = keyword.trim().toLowerCase();
+        const searched = filtered.filter(
+          (a) =>
+            a.email.toLowerCase().includes(lower) ||
+            a.phoneNumber.toLowerCase().includes(lower),
+        );
+        setAccounts(searched);
+        setTotalPages(res.totalPages);
+      } else {
+        setAccounts(filtered);
+        setTotalPages(res.totalPages);
+      }
     } catch (err: any) {
       if (err?.type === "BUSINESS_ERROR") {
         setErrorMsg(err.message);
@@ -113,6 +134,15 @@ export const useAccounts = () => {
   };
 
   // HANDLERS
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(0);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchAll(value);
+    }, DEBOUNCE_MS);
+  };
+
   const handleNextPage = () => {
     setPage((prev) => prev + 1);
   };
@@ -141,7 +171,10 @@ export const useAccounts = () => {
 
   // USE EFFECT
   useEffect(() => {
-    fetchAll();
+    fetchAll(searchTerm);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [page]);
 
   return {
@@ -150,7 +183,7 @@ export const useAccounts = () => {
     errorMsg,
     fetchAll,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
     handleNextPage,
     handlePrevPage,
     totalPages,

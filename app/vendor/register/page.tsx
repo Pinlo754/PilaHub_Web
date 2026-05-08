@@ -1,96 +1,106 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { registerVendor } from '@/hooks/auth.service'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { registerVendor } from "@/hooks/auth.service";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function VendorRegister() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
     agreeTerms: false,
-  })
-  const router = useRouter()
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  });
+  const router = useRouter();
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-  }
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-  const handleRegister = async  (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (!validate()) return
+    if (!validate()) return;
 
-    console.log('Register with:', formData)
-    const res = await registerVendor(formData)
+    console.log("Register with:", formData);
+    const res = await registerVendor(formData);
 
-    if(res) {
-      router.push('/vendor/dashboard')
+    if (res) {
+      router.push("/vendor/dashboard");
     }
-  }
+  };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email không được để trống'
+      newErrors.email = "Email không được để trống";
     }
 
     if (!formData.phoneNumber) {
-      newErrors.phoneNumber = 'Số điện thoại không được để trống'
+      newErrors.phoneNumber = "Số điện thoại không được để trống";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Mật khẩu không được để trống'
+      newErrors.password = "Mật khẩu không được để trống";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu'
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu không khớp'
+      newErrors.confirmPassword = "Mật khẩu không khớp";
     }
 
     if (!formData.agreeTerms) {
-      newErrors.agreeTerms = 'Bạn phải đồng ý điều khoản'
+      newErrors.agreeTerms = "Bạn phải đồng ý điều khoản";
     }
 
-    setErrors(newErrors)
+    setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0
-  }
+    return Object.keys(newErrors).length === 0;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-block w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold mb-4">
-            P
+        <div className="text-center mb-4">
+          <div className="w-40 h-40 relative mx-auto mb-4">
+            <Image
+              src="/logo.png"
+              alt="PilaHub Logo"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">PilaHub</h1>
           <p className="text-gray-600 mt-2">Đăng ký cửa hàng trên PilaHub</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleRegister} className="bg-white rounded-2xl shadow-lg p-8 space-y-4">
-
+        <form
+          onSubmit={handleRegister}
+          className="bg-white rounded-2xl shadow-lg p-8 space-y-4"
+        >
           {/* Email */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <Input
               type="email"
               name="email"
@@ -106,7 +116,9 @@ export default function VendorRegister() {
 
           {/* Phone */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Số điện thoại</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Số điện thoại
+            </label>
             <Input
               type="tel"
               name="phoneNumber"
@@ -122,10 +134,12 @@ export default function VendorRegister() {
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Mật khẩu
+            </label>
             <div className="relative">
               <Input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="••••••••"
                 value={formData.password}
@@ -144,10 +158,12 @@ export default function VendorRegister() {
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Xác nhận mật khẩu
+            </label>
             <div className="relative">
               <Input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="••••••••"
                 value={formData.confirmPassword}
@@ -177,12 +193,18 @@ export default function VendorRegister() {
               className="mt-1 rounded border-gray-300 accent-orange-500"
             />
             <span className="text-sm text-gray-600">
-              Tôi đồng ý với{' '}
-              <Link href="#" className="text-orange-600 hover:text-orange-700 font-semibold">
+              Tôi đồng ý với{" "}
+              <Link
+                href="#"
+                className="text-orange-600 hover:text-orange-700 font-semibold"
+              >
                 điều khoản dịch vụ
-              </Link>
-              {' '}và{' '}
-              <Link href="#" className="text-orange-600 hover:text-orange-700 font-semibold">
+              </Link>{" "}
+              và{" "}
+              <Link
+                href="#"
+                className="text-orange-600 hover:text-orange-700 font-semibold"
+              >
                 chính sách bảo mật
               </Link>
             </span>
@@ -202,12 +224,15 @@ export default function VendorRegister() {
 
         {/* Sign In Link */}
         <p className="text-center mt-6 text-gray-600">
-          Đã có tài khoản?{' '}
-          <Link href="/vendor/login" className="text-orange-600 font-semibold hover:text-orange-700">
+          Đã có tài khoản?{" "}
+          <Link
+            href="/vendor/login"
+            className="text-orange-600 font-semibold hover:text-orange-700"
+          >
             Đăng nhập
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }

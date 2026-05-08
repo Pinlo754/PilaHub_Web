@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CoachType } from "@/utils/DashboardType";
 import { useState } from "react";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 
 const BADGE_COLORS = ["bg-yellow-100", "bg-blue-100"];
 

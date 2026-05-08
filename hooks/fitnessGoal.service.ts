@@ -31,6 +31,28 @@ export const FitnessGoalService = {
     return res.data.data;
   },
 
+  // SEARCH BY NAME
+  searchByName: async (keyword: string): Promise<FitnessGoalType[]> => {
+    const res = await api.get<ApiResponse<FitnessGoalType[]>>(
+      `/fitness-goals/search`,
+      {
+        params: {
+          keyword,
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // GET ALL PURPOSE
   getAllPurpose: async (): Promise<PurposeType[]> => {
     const res = await api.get<ApiResponse<PurposeType[]>>(`/purposes`);

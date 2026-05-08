@@ -6,12 +6,19 @@ import { Power, PowerOff, Trash2 } from "lucide-react";
 
 type Props = {
   course: CourseType;
+  index: number;
   onRowClick: (courseId: string) => void;
   onToggleStatus: (courseId: string, currentActive: boolean) => void;
   onDelete: (courseId: string, courseName: string) => void;
 };
 
-const CourseRow = ({ course, onRowClick, onDelete, onToggleStatus }: Props) => {
+const CourseRow = ({
+  course,
+  index,
+  onRowClick,
+  onDelete,
+  onToggleStatus,
+}: Props) => {
   // VARIABLE
   const activeConfig = getActiveConfig(course.active);
   const levelConfig = getLevelConfig(course.level);
@@ -22,6 +29,9 @@ const CourseRow = ({ course, onRowClick, onDelete, onToggleStatus }: Props) => {
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
       onClick={() => onRowClick(course.courseId)}
     >
+      <td className="py-3 px-4 text-center text-gray-500 font-medium">
+        {index}
+      </td>
       <td className="py-3 px-4 text-gray-500">{shortId}</td>
       <td className="py-3 px-4 text-gray-700">{course.name}</td>
       <td className="py-3 px-4 text-center">
