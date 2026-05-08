@@ -17,7 +17,9 @@ import {
 } from 'recharts'
 import { ShoppingCart, Package, RotateCcw, TrendingUp } from 'lucide-react'
 import { DashboardService } from '@/hooks/dashboard.service'
+import { VendorService } from '@/hooks/vendor.service' // Đảm bảo đã import VendorService
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function VendorDashboard() {
   const [dashboard, setDashboard] = useState<any>(null)
@@ -31,18 +33,46 @@ export default function VendorDashboard() {
   const [appliedStartDate, setAppliedStartDate] = useState('2026-01-01')
   const [appliedEndDate, setAppliedEndDate] = useState('2026-03-17')
   const router = useRouter()
+
+  // --- LOGIC PHÂN QUYỀN & KIỂM TRA HỒ SƠ VENDOR ---
   useEffect(() => {
-    const role =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('role')
-        : null
+    const checkVendorProfile = async () => {
+      if (typeof window === 'undefined') return
 
-    if (role == 'TRAINEE') {
+      const role = localStorage.getItem('role')
+      const vendorId = localStorage.getItem('id') // Hoặc 'userId' tùy theo key bạn lưu trong storage
+
+      // 1. Kiểm tra Role trước
+      if (role === 'TRAINEE') {
         router.push('/vendor/register-vendor')
+        return
+      }
+
+      // 2. Nếu không có id hoặc gọi API check profile thất bại/không có data
+      if (!vendorId) {
+        router.push('/vendor/register-vendor')
+        return
+      }
+
+      try {
+        const res = await VendorService.getVendorById(vendorId)
+
+        // Giả định nếu không thành công hoặc dữ liệu vendor trả về trống/null/false
+        if (!res || !res.success || !res.data) {
+          router.push('/vendor/register-vendor')
+          
+        }
+      } catch (err) {
+        console.error('Lỗi khi kiểm tra hồ sơ Vendor:', err)
+        // Nếu API lỗi (ví dụ 404 không tìm thấy vendor), chủ động đưa sang trang đăng ký
+        router.push('/vendor/register-vendor')
+      }
     }
-  }, [])
 
+    checkVendorProfile()
+  }, [router])
 
+  // --- LOGIC FETCH DASHBOARD DATA ---
   useEffect(() => {
     const fetchDashboard = async () => {
       try {

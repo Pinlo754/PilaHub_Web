@@ -17,6 +17,22 @@ export const WalletService = {
     }
   },
 
+  async openWallet(): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.post(`/wallet/my-wallet/open`);
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: null,
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+
   async createWallet(): Promise<ApiResponse<any>> {
     try {
       const res = await api.post(`/wallet`);
@@ -31,6 +47,7 @@ export const WalletService = {
       };
     }
   },
+
 
   async deposit(payload: any): Promise<ApiResponse<any>> {
     try {
@@ -92,10 +109,24 @@ export const WalletService = {
     }
   },
 
-  async completeWithdrawal(id: string): Promise<ApiResponse<any>> {
+  async approvedWithdrawal(id: string, payload: any): Promise<ApiResponse<any>> {
     try {
-      await api.patch(`/wallet-withdrawals/${id}/approve`);
-      const res = await api.patch(`/wallet-withdrawals/${id}/complete`);
+      const res = await api.patch(`/wallet-withdrawals/${id}/approve`, payload);
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: null,
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+  async completeWithdrawal(id: string, payload: any): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.patch(`/wallet-withdrawals/${id}/complete`, payload);
       return res.data;
     } catch (e: any) {
       return {

@@ -20,6 +20,8 @@ export const OrderService = {
     }
   },
 
+  
+
   async getAllOrders(): Promise<ApiResponse<any[]>> {
     try {
       const res = await api.get(`/orders`);
@@ -168,6 +170,94 @@ export const OrderService = {
       };
     }
   },
+
+
+  async createShipmentProvider(id: string, payload: any): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.post(`/shipments/${id}/create`, payload);
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+  async getMyReturn(): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.get('/order-returns');
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+  async approveReturn(id: string): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.patch(`/order-returns/${id}/approve`);
+
+      return res.data;
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+  async rejectReturn(id: string): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.patch(`/order-returns/${id}/reject`);
+
+      return res.data;
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
+  async completeReturn(id: string): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.patch(`/order-returns/${id}/complete`);
+
+      return res.data;
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
 
   // UPDATE ORDER STATUS
   updateOrderStatus: async (
