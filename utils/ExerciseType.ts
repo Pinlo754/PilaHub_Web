@@ -1,3 +1,4 @@
+import { BodyPartType } from "./BodyPartType";
 import { LevelType } from "./CourseType";
 
 export const EXERCISE_TYPE = {
@@ -35,14 +36,6 @@ export const BREATHING_RULE = {
 
 export type BreathingRuleType =
   (typeof BREATHING_RULE)[keyof typeof BREATHING_RULE];
-
-export type BodyPartType = {
-  bodyPartId: string;
-  name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 export type ExerciseType = {
   exerciseId: string;

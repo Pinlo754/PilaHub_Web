@@ -22,6 +22,26 @@ export const EquipmentService = {
     return res.data.data;
   },
 
+  // SEARCH BY NAME
+  searchByName: async (name: string): Promise<EquipmentType[]> => {
+    const res = await api.get<ApiResponse<EquipmentType[]>>(
+      `/equipment/search`,
+      {
+        params: { name },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // DELETE EQUIPMENT
   deleteEquipment: async (equipmentId: string): Promise<any> => {
     const res = await api.delete<ApiResponse<any>>(`/equipment/${equipmentId}`);

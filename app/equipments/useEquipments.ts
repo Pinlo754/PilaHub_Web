@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CreateEquipmentReq, EquipmentType } from "@/utils/EquipmentType";
 import { EquipmentService } from "@/hooks/equipment.service";
 import { useToast } from "@/hooks/useToast";
 import { useConfirm } from "@/hooks/useConfirm";
 
 const PAGE_SIZE = 10;
+const DEBOUNCE_MS = 500;
 
 export const useEquipments = () => {
   const [equipments, setEquipments] = useState<EquipmentType[]>([]);
@@ -20,6 +21,7 @@ export const useEquipments = () => {
 
   const { toasts, removeToast, showSuccess, showError } = useToast();
   const { confirmState, isConfirmOpen, confirm, closeConfirm } = useConfirm();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchAll = async () => {
     setIsLoading(true);
@@ -33,11 +35,28 @@ export const useEquipments = () => {
     }
   };
 
+  const fetchByName = async (name: string) => {
+    setIsLoading(true);
+    try {
+      const res = await EquipmentService.searchByName(name);
+      setEquipments(res);
+    } catch (err: any) {
+      showError(err?.message ?? "Có lỗi xảy ra khi tìm kiếm");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refresh = async () => {
+    if (searchTerm.trim()) await fetchByName(searchTerm.trim());
+    else await fetchAll();
+  };
+
   const handleCreate = async (data: CreateEquipmentReq): Promise<void> => {
     try {
       await EquipmentService.createEquipment(data);
       showSuccess("Tạo thiết bị thành công");
-      await fetchAll();
+      await refresh();
       setCurrentPage(1);
     } catch (err: any) {
       showError(err?.message ?? "Tạo thiết bị thất bại");
@@ -52,7 +71,7 @@ export const useEquipments = () => {
     try {
       await EquipmentService.updateEquipment(equipmentId, data);
       showSuccess("Cập nhật thiết bị thành công");
-      await fetchAll();
+      await refresh();
       setCurrentPage(1);
     } catch (err: any) {
       showError(err?.message ?? "Cập nhật thiết bị thất bại");
@@ -70,7 +89,7 @@ export const useEquipments = () => {
         try {
           await EquipmentService.deleteEquipment(equipmentId);
           showSuccess("Xoá thiết bị thành công");
-          await fetchAll();
+          await refresh();
           setCurrentPage(1);
         } catch (err: any) {
           showError(err?.message ?? "Xoá thiết bị thất bại");
@@ -79,16 +98,25 @@ export const useEquipments = () => {
     });
   };
 
+  // HANDLERS
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (value.trim() === "") fetchAll();
+      else fetchByName(value.trim());
+    }, DEBOUNCE_MS);
+  };
+
   // ── PAGINATION / FILTER ───────────────────────────────────────────────────
-  const filtered = equipments.filter((e) =>
-    e.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(equipments.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice(
+  const paginated = equipments.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -109,6 +137,9 @@ export const useEquipments = () => {
 
   useEffect(() => {
     fetchAll();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   return {
@@ -118,10 +149,11 @@ export const useEquipments = () => {
     isLoading,
     // search & pagination
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
     currentPage: safePage,
     totalPages,
     handlePageChange,
+    startIndex,
     // actions
     handleCreate,
     handleDelete,

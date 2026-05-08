@@ -6,9 +6,15 @@ type Props = {
   equipment: EquipmentType;
   onPressEquipment: (equipment: EquipmentType) => void;
   onDelete: (equipmentId: string, name: string) => void;
+  index: number;
 };
 
-const EquipmentRow = ({ equipment, onDelete, onPressEquipment }: Props) => {
+const EquipmentRow = ({
+  equipment,
+  onDelete,
+  onPressEquipment,
+  index,
+}: Props) => {
   const shortId = `${equipment.equipmentId.slice(0, 6)}...`;
 
   return (
@@ -16,7 +22,7 @@ const EquipmentRow = ({ equipment, onDelete, onPressEquipment }: Props) => {
       onClick={() => onPressEquipment(equipment)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-500">{shortId}</td>
+      <td className="py-3 px-4 text-gray-500 text-center">{index}</td>
       <td className="py-3 px-4">
         <img
           src={equipment.imageUrl || "/default-logo.png"}

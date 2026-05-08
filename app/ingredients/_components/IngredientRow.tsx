@@ -11,6 +11,7 @@ type Props = {
     currentActive: boolean,
     name: string,
   ) => void;
+  index: number;
 };
 
 const MAX_TAGS = 3;
@@ -19,6 +20,7 @@ const IngredientRow = ({
   ingredient,
   onPressIngredient,
   onToggleActive,
+  index,
 }: Props) => {
   const shortId = `${ingredient.ingredientId.slice(0, 6)}...`;
   const ruleCount = ingredient.ingredientRules.length;
@@ -36,7 +38,7 @@ const IngredientRow = ({
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
       {/* Short ID */}
-      <td className="py-3 px-4 text-gray-500">{shortId}</td>
+      <td className="py-3 px-4 text-gray-500 text-center">{index}</td>
       {/* Name */}
       <td className="py-3 px-4 text-gray-800 font-medium">{ingredient.name}</td>
 

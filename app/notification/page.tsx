@@ -42,8 +42,7 @@ export default function AdminNotificationPage() {
           .filter(Boolean);
       }
 
-      const res =
-        await PushNotificationService.SendPushNotification(payload);
+      const res = await PushNotificationService.SendPushNotification(payload);
 
       if (!res.success) throw new Error(res.message);
 
@@ -66,16 +65,13 @@ export default function AdminNotificationPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Broadcast Notification" />
+        <Header title="Thông báo" iconName="notification" />
 
         <main className="flex-1 overflow-auto p-6">
           <Card className="max-w-xl mx-auto p-6 border-2 border-orange-200 rounded-2xl shadow-lg space-y-5">
-
             {/* TITLE */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Tiêu đề
-              </label>
+              <label className="block text-sm font-medium mb-1">Tiêu đề</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -86,9 +82,7 @@ export default function AdminNotificationPage() {
 
             {/* MESSAGE */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Nội dung
-              </label>
+              <label className="block text-sm font-medium mb-1">Nội dung</label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -105,20 +99,12 @@ export default function AdminNotificationPage() {
               </label>
               <select
                 value={target}
-                onChange={(e) =>
-                  setTarget(e.target.value as TargetType)
-                }
+                onChange={(e) => setTarget(e.target.value as TargetType)}
                 className="w-full px-3 py-2 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
               >
-                <option value="ALL_TRAINEE">
-                  Toàn bộ Trainee
-                </option>
-                <option value="ALL_COACH">
-                  Toàn bộ Coach
-                </option>
-                <option value="CUSTOM">
-                  Gửi theo Account ID
-                </option>
+                <option value="ALL_TRAINEE">Toàn bộ Trainee</option>
+                <option value="ALL_COACH">Toàn bộ Coach</option>
+                <option value="CUSTOM">Gửi theo Account ID</option>
               </select>
             </div>
 

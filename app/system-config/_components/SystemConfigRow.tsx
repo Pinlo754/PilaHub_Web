@@ -31,7 +31,7 @@ const SystemConfigRow = ({ config, onPressConfig }: Props) => {
         </span>
       </td>
       <td className="py-3 px-4 text-center text-gray-500 text-sm">
-        {formatLocalDateTime(config.updatedAt, "datetime")}
+        {formatLocalDateTime(config.updatedAt ?? config.createdAt, "datetime")}
       </td>
     </tr>
   );

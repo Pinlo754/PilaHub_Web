@@ -51,7 +51,7 @@ export default function AccountsPage() {
 
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <Header title="Tài khoản" />
+        <Header title="Tài khoản" iconName="accounts" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
@@ -71,6 +71,8 @@ export default function AccountsPage() {
                 accounts={accounts}
                 onPressAccount={openDetailModal}
                 updateStatusAccount={updateStatusAccount}
+                page={page}
+                size={10}
               />
             </div>
 

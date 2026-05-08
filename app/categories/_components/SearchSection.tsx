@@ -16,7 +16,7 @@ const SearchSection = ({ searchTerm, onChange, openCreateModal }: Props) => {
         <Search className="absolute left-3 top-3 text-gray-400" size={20} />
         <input
           type="text"
-          placeholder="Tìm kiếm tài khoản"
+          placeholder="Tìm kiếm theo tên..."
           value={searchTerm}
           onChange={(e) => onChange(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border-2 border-orange-100 rounded-lg focus:outline-none focus:border-orange-300"
@@ -24,10 +24,10 @@ const SearchSection = ({ searchTerm, onChange, openCreateModal }: Props) => {
       </div>
 
       {/* Filter */}
-      <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
+      {/* <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
         <Funnel size={18} />
         Lọc
-      </button>
+      </button> */}
 
       {/* Create */}
       <button

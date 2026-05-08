@@ -29,10 +29,17 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   vendor: VendorType | null;
-  onVerify: () => void;
+  onVerify: (vendor: VendorType) => void;
+  onUnverify: (vendor: VendorType) => void;
 };
 
-const VerifyModal = ({ open, onOpenChange, vendor, onVerify }: Props) => {
+const VerifyModal = ({
+  open,
+  onOpenChange,
+  vendor,
+  onVerify,
+  onUnverify,
+}: Props) => {
   if (!vendor) return null;
 
   return (
@@ -62,7 +69,7 @@ const VerifyModal = ({ open, onOpenChange, vendor, onVerify }: Props) => {
               <h3 className="font-semibold text-gray-800 text-lg">
                 {vendor.businessName}
               </h3>
-              <p className="text-sm text-gray-500 font-mono">
+              <p className="text-sm text-gray-500">
                 {vendor.vendorId.slice(0, 8)}...
               </p>
             </div>
@@ -71,15 +78,17 @@ const VerifyModal = ({ open, onOpenChange, vendor, onVerify }: Props) => {
           {/* Vendor Details */}
           <FieldGroup>
             {/* Phone */}
-            <Field>
-              <Label className="flex items-center gap-2 text-gray-600">
-                <Phone className="w-4 h-4" />
-                Số điện thoại
-              </Label>
-              <div className="px-3 py-2 rounded-md bg-gray-50 text-gray-800">
-                {vendor.phoneNumber}
-              </div>
-            </Field>
+            {vendor.phoneNumber && (
+              <Field>
+                <Label className="flex items-center gap-2 text-gray-600">
+                  <Phone className="w-4 h-4" />
+                  Số điện thoại
+                </Label>
+                <div className="px-3 py-2 rounded-md bg-gray-50 text-gray-800">
+                  {vendor.phoneNumber}
+                </div>
+              </Field>
+            )}
 
             {/* Address */}
             <Field>
@@ -154,16 +163,24 @@ const VerifyModal = ({ open, onOpenChange, vendor, onVerify }: Props) => {
         </div>
 
         <DialogFooter className="gap-2">
-          <Button
+          {/* <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="border-gray-200"
           >
             Huỷ
+          </Button> */}
+          <Button
+            variant="outline"
+            onClick={() => onUnverify(vendor)}
+            className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-700 border-red-200"
+          >
+            Hủy xác minh
           </Button>
           <Button
-            onClick={onVerify}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            variant="outline"
+            onClick={() => onVerify(vendor)}
+            className="bg-green-100 hover:bg-green-200 hover:text-green-700 text-green-700 border-green-300"
           >
             Xác minh
           </Button>

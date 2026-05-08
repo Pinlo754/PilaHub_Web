@@ -6,7 +6,7 @@ export const formatLocalDateTime = (
   isoString: string,
   type: FormatType = "datetime",
 ) => {
-  if (!isoString) return "";
+  if (!isoString) return "—";
 
   const date = new Date(isoString);
 

@@ -99,7 +99,7 @@ const VendorDetail = ({ vendor }: Props) => {
             />
             <InfoRow
               icon={<BadgePercent size={14} />}
-              label={`Phí nền tảng: ${vendor.platformFeePercentage}%`}
+              label={`Phí nền tảng: ${vendor.platformFeePercentage ?? 0}%`}
             />
             <a
               href={vendor.businessLicenseUrl}

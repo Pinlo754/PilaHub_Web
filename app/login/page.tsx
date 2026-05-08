@@ -1,66 +1,77 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { getProfile, login } from '@/hooks/auth.service'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getProfile, login } from "@/hooks/auth.service";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function VendorLogin() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const res = await login({ email, password })
+    const res = await login({ email, password });
 
     if (res.ok) {
-      const profileRes = await getProfile()
+      const profileRes = await getProfile();
 
       if (!profileRes.ok || !profileRes.data) {
-        alert('Không lấy được thông tin người dùng')
-        return
+        alert("Không lấy được thông tin người dùng");
+        return;
       }
 
-      const role = profileRes.data.role
+      const role = profileRes.data.role;
 
-      console.log('Role:', role)
+      console.log("Role:", role);
 
       // ✅ điều hướng theo role
-      if (role === 'VENDOR') {
-        router.push('/vendor/dashboard')
-      } else if (role === 'ADMIN') {
-        router.push('/')
+      if (role === "VENDOR") {
+        router.push("/vendor/dashboard");
+      } else if (role === "ADMIN") {
+        router.push("/");
       } else {
-        router.push('/vendor/dashboard') // fallback
+        router.push("/vendor/dashboard"); // fallback
       }
     } else {
-      console.error(res.error)
-      alert(res.error?.message || 'Đăng nhập thất bại')
+      console.error(res.error);
+      alert(res.error?.message || "Đăng nhập thất bại");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-block w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold mb-4">
-            P
+        <div className="flex justify-center mb-8">
+          <div className="w-40 h-40 relative">
+            <Image
+              src="/logo.png"
+              alt="PilaHub Logo"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">PilaHub</h1>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+        <form
+          onSubmit={handleLogin}
+          className="bg-white rounded-2xl shadow-lg p-8 space-y-6"
+        >
           {/* Email */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <Input
               type="email"
               placeholder="vendor@example.com"
@@ -72,10 +83,12 @@ export default function VendorLogin() {
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Mật khẩu
+            </label>
             <div className="relative">
               <Input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -92,12 +105,18 @@ export default function VendorLogin() {
           </div>
 
           {/* Remember Me */}
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" className="rounded border-gray-300 accent-orange-500" />
+          <div className="flex items-center justify-end">
+            {/* <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="rounded border-gray-300 accent-orange-500"
+              />
               <span className="text-sm text-gray-600">Nhớ mật khẩu</span>
-            </label>
-            <Link href="/vendor/forgot-password" className="text-sm text-orange-600 hover:text-orange-700">
+            </label> */}
+            <Link
+              href="/vendor/forgot-password"
+              className="text-sm text-orange-600 hover:text-orange-700"
+            >
               Quên mật khẩu?
             </Link>
           </div>
@@ -113,12 +132,15 @@ export default function VendorLogin() {
 
         {/* Sign Up Link */}
         <p className="text-center mt-6 text-gray-600">
-          Chưa có tài khoản?{' '}
-          <Link href="/vendor/register" className="text-orange-600 font-semibold hover:text-orange-700">
+          Bạn muốn trở thành nhà cung cấp?{" "}
+          <Link
+            href="/vendor/register"
+            className="text-orange-600 font-semibold hover:text-orange-700"
+          >
             Đăng ký ngay
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }

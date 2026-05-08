@@ -14,13 +14,14 @@ import {
 import { useEffect, useState } from "react";
 import { ExerciseService } from "@/hooks/exercise.service";
 import { useFirebaseUpload } from "@/hooks/useFirebaseUpload";
-import { BodyPartType, CreateExerciseReq } from "@/utils/ExerciseType";
+import { CreateExerciseReq } from "@/utils/ExerciseType";
 import {
   DIFFICULTY_LEVELS,
   getLevelLabel,
   EXERCISE_TYPE_SELECT_OPTIONS,
   BREATHING_RULE_SELECT_OPTIONS,
 } from "@/utils/uiMapper";
+import { BodyPartType } from "@/utils/BodyPartType";
 
 type Props = {
   form: Partial<CreateExerciseReq>;

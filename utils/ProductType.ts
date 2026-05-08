@@ -23,6 +23,7 @@ export type ProductType = {
   brand: string;
   specifications: string;
   categoryType: CategoryType | null;
+  expiredDate: string | null;
   refId: string | null;
   height: number | null;
   length: number | null;
@@ -33,6 +34,7 @@ export type ProductType = {
   avgRating: number | null;
   reviewCount: number;
   active: boolean;
+  ruleViolation: boolean;
   createdAt: string;
   updatedAt: string;
 };

@@ -4,11 +4,17 @@ import { Power, PowerOff } from "lucide-react";
 
 type Props = {
   pkg: PackageType;
+  index: number;
   onPressPackage: (pkg: PackageType) => void;
   updateStatusPackage: (packageId: string, isActive: boolean) => void;
 };
 
-const PackageRow = ({ pkg, onPressPackage, updateStatusPackage }: Props) => {
+const PackageRow = ({
+  pkg,
+  index,
+  onPressPackage,
+  updateStatusPackage,
+}: Props) => {
   const shortId = `${pkg.packageId.slice(0, 6)}...`;
   const packageConfig = getPackageConfig(pkg.packageType);
 
@@ -17,7 +23,7 @@ const PackageRow = ({ pkg, onPressPackage, updateStatusPackage }: Props) => {
       onClick={() => onPressPackage(pkg)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-500">{shortId}</td>
+      <td className="py-3 px-4 text-gray-500 text-center">{index}</td>
       <td className="py-3 px-4 text-gray-700 font-medium">{pkg.packageName}</td>
       <td className="py-3 px-4 text-center">
         <span

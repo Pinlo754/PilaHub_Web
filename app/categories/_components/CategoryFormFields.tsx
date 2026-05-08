@@ -30,6 +30,7 @@ type Props = {
     value: CategoryForm[K],
   ) => void;
   handleBlur: (key: keyof CategoryForm) => void;
+  parentCategoryId?: string;
 };
 
 const CATEGORY_TYPE_OPTIONS = Object.values(CATEGORY_TYPE) as CategoryType[];
@@ -42,10 +43,15 @@ const CategoryFormFields = ({
   parentCategories,
   handleChange,
   handleBlur,
+  parentCategoryId,
 }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, loading: uploading, progress } = useFirebaseUpload();
   const [dragOver, setDragOver] = useState(false);
+
+  const parentCategory = parentCategories.find(
+    (c) => c.categoryId === parentCategoryId,
+  );
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
@@ -199,28 +205,40 @@ const CategoryFormFields = ({
         </Field>
 
         {/* Parent Category */}
-        <Field>
-          <Label>Danh mục cha</Label>
-          <Select
-            value={form.parentCategoryId ?? "NONE"}
-            onValueChange={(v) => {
-              handleChange("parentCategoryId", v === "NONE" ? null : v);
-              handleBlur("parentCategoryId");
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Không có" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="NONE">— Không có —</SelectItem>
-              {parentCategories.map((cat) => (
-                <SelectItem key={cat.categoryId} value={cat.categoryId}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+        {parentCategoryId ? (
+          <div className="space-y-1">
+            <Label>Danh mục cha</Label>
+            <Input
+              value={parentCategory?.name ?? parentCategoryId}
+              readOnly
+              disabled
+              className="bg-gray-50 text-gray-700 cursor-not-allowed"
+            />
+          </div>
+        ) : (
+          <Field>
+            <Label>Danh mục cha</Label>
+            <Select
+              value={form.parentCategoryId ?? "NONE"}
+              onValueChange={(v) => {
+                handleChange("parentCategoryId", v === "NONE" ? null : v);
+                handleBlur("parentCategoryId");
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Không có" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NONE">— Không có —</SelectItem>
+                {parentCategories.map((cat) => (
+                  <SelectItem key={cat.categoryId} value={cat.categoryId}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
 
         {/* Status — edit only */}
         {isEditMode && (

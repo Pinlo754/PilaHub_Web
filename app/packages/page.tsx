@@ -17,6 +17,7 @@ export default function PackagesPage() {
     isLoading,
     searchTerm,
     setSearchTerm,
+    startIndex,
     handleNextPage,
     handlePrevPage,
     totalPages,
@@ -45,7 +46,7 @@ export default function PackagesPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Gói dịch vụ" />
+        <Header title="Gói dịch vụ" iconName="packages" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
@@ -58,6 +59,7 @@ export default function PackagesPage() {
             <div className="overflow-x-auto">
               <PackageTable
                 packages={packages}
+                startIndex={startIndex}
                 onPressPackage={openDetailModal}
                 updateStatusPackage={updateStatusPackage}
               />

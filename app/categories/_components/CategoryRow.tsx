@@ -1,4 +1,5 @@
 import { CategoryType } from "@/utils/CategoryType";
+import { formatLocalDateTime } from "@/utils/day";
 import { getCategoryTypeConfig } from "@/utils/uiMapper";
 import { Power, PowerOff, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 
@@ -8,6 +9,7 @@ type Props = {
   onPressCategory: (category: CategoryType) => void;
   updateStatusCategory: (categoryId: string, active: boolean) => void;
   deleteCategory: (categoryId: string, name: string) => void;
+  index: number;
 };
 
 const CategoryRow = ({
@@ -16,6 +18,7 @@ const CategoryRow = ({
   onPressCategory,
   updateStatusCategory,
   deleteCategory,
+  index,
 }: Props) => {
   const typeCfg = category.categoryType
     ? getCategoryTypeConfig(category.categoryType)
@@ -29,8 +32,8 @@ const CategoryRow = ({
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer transition"
     >
       {/* Mã */}
-      <td className="py-3 px-4">
-        <span className=" text-gray-500 ">{shortId}</span>
+      <td className="py-3 px-4 text-center">
+        <span className=" text-gray-500">{index}</span>
       </td>
 
       {/* Tên */}
@@ -54,11 +57,11 @@ const CategoryRow = ({
       </td>
 
       {/* Danh mục cha */}
-      <td className="py-3 px-4 text-gray-600 text-sm">
+      <td className="py-3 px-4 text-gray-600 text-sm text-center">
         {parentName ? (
           <span className=" text-gray-700 font-medium">{parentName}</span>
         ) : (
-          <span className="text-gray-300 text-xs">—</span>
+          <span className="text-gray-400 text-xs">—</span>
         )}
       </td>
 
@@ -71,7 +74,7 @@ const CategoryRow = ({
             {typeCfg.label}
           </span>
         ) : (
-          <span className="text-gray-300 text-xs">—</span>
+          <span className="text-gray-400 text-xs">—</span>
         )}
       </td>
 
@@ -81,6 +84,12 @@ const CategoryRow = ({
           className={`px-3 py-1 rounded-full text-xs font-medium ${category.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
         >
           {category.active ? "Hoạt động" : "Tạm dừng"}
+        </span>
+      </td>
+
+      <td className="py-3 px-4 text-gray-600 text-center">
+        <span className=" text-gray-500">
+          {formatLocalDateTime(category.createdAt, "datetime")}
         </span>
       </td>
 

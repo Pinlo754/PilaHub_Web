@@ -7,11 +7,9 @@ import { useConfirm } from "@/hooks/useConfirm";
 export const useAiDocuments = () => {
   const SIZE = 10;
 
-  // HOOKS
   const { showSuccess, showError, toasts, removeToast } = useToast();
   const { confirm, confirmState, isConfirmOpen, closeConfirm } = useConfirm();
 
-  // STATE
   const [documents, setDocuments] = useState<AiDocumentType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
@@ -21,12 +19,16 @@ export const useAiDocuments = () => {
     useState<AiDocumentType | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // REFERENCE SECTION STATES
+  // Section states — mỗi section độc lập
   const [roadmapStatus, setRoadmapStatus] = useState<CheckFileRes | null>(null);
+  const [roadmapReviewStatus, setRoadmapReviewStatus] =
+    useState<CheckFileRes | null>(null);
   const [scoringStatus, setScoringStatus] = useState<CheckFileRes | null>(null);
   const [workoutStatus, setWorkoutStatus] = useState<CheckFileRes | null>(null);
+
   const [checkingSection, setCheckingSection] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  // activeSection is now a Set to allow multiple expanded sections
+  const [activeSections, setActiveSections] = useState<Set<string>>(new Set());
   const [uploadingSection, setUploadingSection] = useState<string | null>(null);
 
   // API
@@ -38,7 +40,6 @@ export const useAiDocuments = () => {
         pageToken: page > 0 ? String(page) : undefined,
       });
       setDocuments(res.files ?? []);
-      // nextPageToken used as a way to determine if there's more
       setTotalPages(res.nextPageToken ? page + 2 : page + 1);
     } catch (err: any) {
       showError(err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra");
@@ -54,6 +55,9 @@ export const useAiDocuments = () => {
       if (section === "roadmap") {
         res = await AiDocumentService.checkStatusOfRoadmapReference();
         setRoadmapStatus(res);
+      } else if (section === "roadmapReview") {
+        res = await AiDocumentService.checkStatusOfRoadmapReviewReference();
+        setRoadmapReviewStatus(res);
       } else if (section === "scoring") {
         res = await AiDocumentService.checkStatusOfScoringGuideline();
         setScoringStatus(res);
@@ -61,7 +65,7 @@ export const useAiDocuments = () => {
         res = await AiDocumentService.checkStatusOfWorkoutFeedbackReference();
         setWorkoutStatus(res);
       }
-      setActiveSection(section);
+      setActiveSections((prev) => new Set(prev).add(section));
     } catch (err: any) {
       showError(err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra");
     } finally {
@@ -69,11 +73,25 @@ export const useAiDocuments = () => {
     }
   };
 
+  const toggleSection = (section: string) => {
+    setActiveSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        // trigger check if not yet loaded
+        checkSectionStatus(section);
+      }
+      return next;
+    });
+  };
+
   const uploadSectionFile = async (section: string, file: File) => {
     setUploadingSection(section);
     try {
       let currentStatus: CheckFileRes | null = null;
       if (section === "roadmap") currentStatus = roadmapStatus;
+      else if (section === "roadmapReview") currentStatus = roadmapReviewStatus;
       else if (section === "scoring") currentStatus = scoringStatus;
       else currentStatus = workoutStatus;
 
@@ -82,6 +100,8 @@ export const useAiDocuments = () => {
         const fileName = currentStatus.documentUri.split("/").pop()!;
         if (section === "roadmap") {
           await AiDocumentService.deleteRoadmapReference(fileName);
+        } else if (section === "roadmapReview") {
+          await AiDocumentService.deleteRoadmapReviewReference(fileName);
         } else if (section === "scoring") {
           await AiDocumentService.deleteFile(fileName);
         } else {
@@ -89,9 +109,10 @@ export const useAiDocuments = () => {
         }
       }
 
-      // Upload
       if (section === "roadmap") {
         await AiDocumentService.uploadRoadmapReference({ file });
+      } else if (section === "roadmapReview") {
+        await AiDocumentService.uploadRoadmapReviewReference({ file });
       } else if (section === "scoring") {
         await AiDocumentService.uploadScoringGuideline({ file });
       } else {
@@ -111,15 +132,24 @@ export const useAiDocuments = () => {
   const downloadSectionFile = async (section: string) => {
     setIsLoading(true);
     try {
-      let url: string;
+      let blob: Blob;
+      let fileName: string;
+
       if (section === "roadmap") {
-        url = await AiDocumentService.downloadRoadmapReference();
+        blob = await AiDocumentService.downloadRoadmapReference();
+        fileName = "roadmap-reference";
+      } else if (section === "roadmapReview") {
+        blob = await AiDocumentService.downloadRoadmapReviewReference();
+        fileName = "roadmap-review-reference";
       } else if (section === "scoring") {
-        url = await AiDocumentService.downloadScoringGuideline();
+        blob = await AiDocumentService.downloadScoringGuideline();
+        fileName = "scoring-guideline";
       } else {
-        url = await AiDocumentService.downloadWorkoutFeedbackReference();
+        blob = await AiDocumentService.downloadWorkoutFeedbackReference();
+        fileName = "workout-feedback-reference";
       }
-      triggerDownload(url);
+
+      triggerDownload(blob, fileName);
     } catch (err: any) {
       showError(err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra");
     } finally {
@@ -130,8 +160,8 @@ export const useAiDocuments = () => {
   const downloadFile = async (fileName: string) => {
     setIsLoading(true);
     try {
-      const url = await AiDocumentService.downloadFile(fileName);
-      triggerDownload(url, fileName);
+      const blob = await AiDocumentService.downloadFile(fileName);
+      triggerDownload(blob, fileName);
     } catch (err: any) {
       showError(err?.type === "BUSINESS_ERROR" ? err.message : "Có lỗi xảy ra");
     } finally {
@@ -166,7 +196,17 @@ export const useAiDocuments = () => {
     });
   };
 
-  // HANDLERS
+  const triggerDownload = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleNextPage = () => setPage((prev) => prev + 1);
   const handlePrevPage = () => setPage((prev) => (prev > 0 ? prev - 1 : 0));
 
@@ -180,16 +220,6 @@ export const useAiDocuments = () => {
     setShowDetailModal(false);
   };
 
-  const triggerDownload = (url: string, fileName?: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName || "";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // EFFECTS
   useEffect(() => {
     fetchAll();
   }, [page]);
@@ -213,11 +243,12 @@ export const useAiDocuments = () => {
     deleteFile,
     // Section
     roadmapStatus,
+    roadmapReviewStatus,
     scoringStatus,
     workoutStatus,
     checkingSection,
-    activeSection,
-    setActiveSection,
+    activeSections,
+    toggleSection,
     uploadingSection,
     checkSectionStatus,
     uploadSectionFile,

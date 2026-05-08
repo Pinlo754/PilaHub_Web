@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TraineeService } from "@/hooks/trainee.service";
 import { TraineeType } from "@/utils/TraineeType";
 import { useToast } from "@/hooks/useToast";
 import { useConfirm } from "@/hooks/useConfirm";
 
 export const useTrainees = () => {
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 9;
 
   const [trainees, setTrainees] = useState<TraineeType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +64,14 @@ export const useTrainees = () => {
     setShowDetailModal(false);
   };
 
+  // HANDLERS
+  const handleSearchChange = useCallback((value: string) => {
+    setIsLoading(true);
+    setSearchTerm(value);
+    setCurrentPage(1);
+    setTimeout(() => setIsLoading(false), 300);
+  }, []);
+
   // PAGINATION
   const filtered = trainees.filter((t) =>
     t.fullName.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -74,6 +82,7 @@ export const useTrainees = () => {
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -88,7 +97,7 @@ export const useTrainees = () => {
     isLoading,
     fetchAll,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
     currentPage: safePage,
     totalPages,
     handlePageChange,
@@ -103,5 +112,6 @@ export const useTrainees = () => {
     confirmState,
     isConfirmOpen,
     closeConfirm,
+    startIndex,
   };
 };

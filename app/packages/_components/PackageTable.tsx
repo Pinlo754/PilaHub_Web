@@ -3,12 +3,14 @@ import PackageRow from "./PackageRow";
 
 type Props = {
   packages: PackageType[];
+  startIndex: number;
   onPressPackage: (pkg: PackageType) => void;
   updateStatusPackage: (packageId: string, isActive: boolean) => void;
 };
 
 const PackageTable = ({
   packages,
+  startIndex,
   onPressPackage,
   updateStatusPackage,
 }: Props) => {
@@ -16,8 +18,8 @@ const PackageTable = ({
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
-          <th className="text-left py-3 px-4 font-semibold text-orange-700">
-            Mã gói
+          <th className="text-center py-3 px-4 font-semibold text-orange-700 w-14">
+            STT
           </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Tên gói
@@ -40,10 +42,11 @@ const PackageTable = ({
         </tr>
       </thead>
       <tbody>
-        {packages.map((pkg) => (
+        {packages.map((pkg, idx) => (
           <PackageRow
             key={pkg.packageId}
             pkg={pkg}
+            index={startIndex + idx + 1}
             onPressPackage={onPressPackage}
             updateStatusPackage={updateStatusPackage}
           />

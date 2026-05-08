@@ -9,19 +9,21 @@ type Props = {
     currentActive: boolean,
     name: string,
   ) => void;
+  startIndex: number;
 };
 
 const IngredientTable = ({
   ingredients,
   onPressIngredient,
   onToggleActive,
+  startIndex,
 }: Props) => {
   return (
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
-          <th className="text-left py-3 px-4 font-semibold text-orange-700">
-            Mã
+          <th className="text-center py-3 px-4 font-semibold text-orange-700">
+            STT
           </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Tên nguyên liệu
@@ -51,12 +53,13 @@ const IngredientTable = ({
             </td>
           </tr>
         ) : (
-          ingredients.map((ing) => (
+          ingredients.map((ing, idx) => (
             <IngredientRow
               key={ing.ingredientId}
               ingredient={ing}
               onPressIngredient={onPressIngredient}
               onToggleActive={onToggleActive}
+              index={startIndex + idx + 1}
             />
           ))
         )}

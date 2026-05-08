@@ -1,4 +1,5 @@
 import { PackageType, RoleType } from "./AccountType";
+import { BodyPartNameType } from "./BodyPartType";
 import { BookingStatusType, BookingType } from "./CoachBookingType";
 import { LEVEL, LevelType } from "./CourseType";
 import {
@@ -28,6 +29,7 @@ import {
 } from "./OrderType";
 import { CategoryType, RegionCode } from "./ProductType";
 import { SystemKeyType } from "./SystemConfigType";
+import { TICKET_STATUS, TicketStatusType } from "./TicketType";
 import {
   GenderType,
   WorkoutFrequencyType,
@@ -848,6 +850,93 @@ export const LIVE_SESSION_STATUS_MAP: Record<LiveSessionStatusType, MapType> = {
   },
 };
 
+export const TICKET_STATUS_MAP: Record<TicketStatusType, MapType> = {
+  PENDING: {
+    label: "Chờ duyệt",
+    bgColor: "bg-yellow-100",
+    textColor: "text-yellow-700",
+  },
+  APPROVED: {
+    label: "Đã duyệt",
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
+  },
+  REJECTED: {
+    label: "Từ chối",
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
+  },
+};
+
+export const BODY_PART_MAP: Record<BodyPartNameType, { label: string }> = {
+  Head: {
+    label: "Đầu",
+  },
+  Neck: {
+    label: "Cổ",
+  },
+  "Cervical Spine": {
+    label: "Cột sống cổ",
+  },
+  "Thoracic Spine": {
+    label: "Cột sống ngực",
+  },
+  "Lumbar Spine": {
+    label: "Cột sống thắt lưng",
+  },
+  Core: {
+    label: "Cơ trung tâm",
+  },
+  Shoulders: {
+    label: "Vai",
+  },
+  "Upper Back": {
+    label: "Lưng trên",
+  },
+  "Lower Back": {
+    label: "Lưng dưới",
+  },
+  Chest: {
+    label: "Ngực",
+  },
+  "Upper Arms": {
+    label: "Cánh tay trên",
+  },
+  Elbows: {
+    label: "Khuỷu tay",
+  },
+  Forearms: {
+    label: "Cẳng tay",
+  },
+  Wrists: {
+    label: "Cổ tay",
+  },
+  Hands: {
+    label: "Bàn tay",
+  },
+  Hips: {
+    label: "Hông",
+  },
+  Glutes: {
+    label: "Mông",
+  },
+  Thighs: {
+    label: "Đùi",
+  },
+  Knees: {
+    label: "Đầu gối",
+  },
+  Calves: {
+    label: "Bắp chân",
+  },
+  Ankles: {
+    label: "Cổ chân",
+  },
+  Feet: {
+    label: "Bàn chân",
+  },
+};
+
 // FUNCTION
 export const buildSelectOptions = <T extends string>(
   values: readonly T[],
@@ -1116,6 +1205,18 @@ export const getLiveSessionStatusConfig = (status: LiveSessionStatusType) =>
 export const getLiveSessionStatusLabel = (status: LiveSessionStatusType) =>
   LIVE_SESSION_STATUS_MAP[status].label;
 
+export const getTicketStatusConfig = (status: TicketStatusType) =>
+  TICKET_STATUS_MAP[status];
+
+export const getTicketStatusLabel = (status: TicketStatusType) =>
+  TICKET_STATUS_MAP[status].label;
+
+export const getBodyPartLabel = (name: string | null | undefined): string => {
+  if (!name) return "Không xác định";
+
+  return BODY_PART_MAP[name as BodyPartNameType]?.label || name;
+};
+
 // OPTIONS
 export const RULE_TYPE_OPTIONS = Object.values(RULE_TYPE);
 
@@ -1166,6 +1267,13 @@ export const BREATHING_RULE_SELECT_OPTIONS = buildSelectOptions(
   getBreathingRuleLabel,
 );
 
+export const TICKET_STATUS_OPTIONS = Object.values(TICKET_STATUS);
+
+export const TICKET_STATUS_SELECT_OPTIONS = buildSelectOptions(
+  TICKET_STATUS_OPTIONS,
+  getTicketStatusLabel,
+);
+
 // FORMAT
 export const formatSystemConfigValue = (key: SystemKeyType, value: string) => {
   switch (key) {
@@ -1174,6 +1282,7 @@ export const formatSystemConfigValue = (key: SystemKeyType, value: string) => {
     case "HOLDING_DAYS":
       return `${value} ngày`;
     case "HOURS_PER_SLOT":
+    case "VENDOR_CONFIRM_ORDER_HOURS":
       return `${value} giờ`;
     default:
       return value;

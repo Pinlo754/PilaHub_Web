@@ -14,7 +14,7 @@ export type SystemConfigType = {
   value: string;
   description: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
 };
 
 export type UpdateSystemConfigReq = Pick<

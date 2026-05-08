@@ -20,6 +20,9 @@ export default function ReportsPage() {
     isLoading,
     searchTerm,
     setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    startIndex,
     currentPage,
     totalPages,
     handlePageChange,
@@ -47,15 +50,21 @@ export default function ReportsPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Báo cáo buổi học" />
+        <Header title="Báo cáo buổi học" iconName="reports" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
-            <SearchSection searchTerm={searchTerm} onChange={setSearchTerm} />
+            <SearchSection
+              searchTerm={searchTerm}
+              onChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+            />
 
             <div className="overflow-x-auto">
               <LiveSessionReportTable
                 reports={paginated}
+                startIndex={startIndex}
                 traineeMap={traineeMap}
                 coachMap={coachMap}
                 onPressReport={openDetailModal}

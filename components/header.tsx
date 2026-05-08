@@ -1,20 +1,79 @@
 "use client";
 
-import { Bell, User, Calendar } from "lucide-react";
+import {
+  Bell,
+  User,
+  Calendar,
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  FileText,
+  Dumbbell,
+  Boxes,
+  Package,
+  Settings,
+  LucideIcon,
+  Grid2X2Plus,
+  Pill,
+  Goal,
+  Truck,
+  Video,
+  Flag,
+  Bot,
+  CreditCard,
+  ScrollText,
+  HeartPulse,
+  MessageSquareWarning,
+  Ticket,
+  Tag,
+  Target,
+  Leaf,
+  RotateCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   title: string;
+  iconName?: keyof typeof iconMap;
 }
 
-export function Header({ title }: HeaderProps) {
+const iconMap = {
+  dashboard: LayoutDashboard,
+  accounts: Users,
+  courses: BookOpen,
+  exercises: FileText,
+  bodyParts: HeartPulse,
+  equipments: Dumbbell,
+  purposes: Target,
+  packages: Boxes,
+  categories: Grid2X2Plus,
+  supplements: Pill,
+  ingredients: Leaf,
+  goals: Goal,
+  orders: Package,
+  ghn: Truck,
+  videocall: Video,
+  reports: Flag,
+  reportReasons: MessageSquareWarning,
+  returnReasons: RotateCw,
+  tickets: Ticket,
+  ticketTypes: Tag,
+  aiDocument: Bot,
+  withdrawals: CreditCard,
+  transactions: ScrollText,
+  notification: Bell,
+  systemConfig: Settings,
+};
+
+export function Header({ title, iconName = "dashboard" }: HeaderProps) {
+  const IconComponent: LucideIcon = iconMap[iconName] || LayoutDashboard;
   return (
     <header className="bg-white border-b border-orange-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-orange-100 flex items-center justify-center">
-              <span className="text-xs font-bold text-orange-600">📊</span>
+            <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+              <IconComponent size={18} className="text-orange-600" />
             </div>
             <h1 className="text-xl font-semibold text-orange-700">{title}</h1>
           </div>
@@ -42,7 +101,7 @@ export function Header({ title }: HeaderProps) {
           <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-orange-50">
             <User size={20} />
           </Button> */}
-          <span className="text-sm font-medium text-orange-600">Admin</span>
+          {/* <span className="text-sm font-medium text-orange-600">Admin</span> */}
         </div>
       </div>
     </header>

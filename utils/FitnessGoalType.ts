@@ -2,6 +2,7 @@ export type FitnessGoalType = {
   goalId: string;
   code: string;
   vietnameseName: string;
+  relatedPurposes: PurposeType[];
 };
 
 export type PurposeType = {

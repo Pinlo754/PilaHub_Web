@@ -36,6 +36,8 @@ export default function FitnessGoalsPage() {
     closeConfirm,
     toasts,
     removeToast,
+    isSearchMode,
+    purposes,
   } = useFitnessGoals();
 
   return (
@@ -45,7 +47,7 @@ export default function FitnessGoalsPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Mục tiêu tập luyện" />
+        <Header title="Mục tiêu tập luyện" iconName="goals" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
@@ -60,6 +62,7 @@ export default function FitnessGoalsPage() {
                 fitnessGoals={fitnessGoals}
                 onPressFitnessGoal={openDetailModal}
                 updateStatusFitnessGoal={updateStatusFitnessGoal}
+                pageOffset={isSearchMode ? 0 : page * 13}
               />
             </div>
 
@@ -80,6 +83,7 @@ export default function FitnessGoalsPage() {
           open={showDetailModal}
           onOpenChange={(open) => !open && closeDetailModal()}
           goal={selectedGoal}
+          purposes={purposes}
           onCreate={createFitnessGoal}
           onUpdate={updateFitnessGoal}
         />
@@ -90,6 +94,7 @@ export default function FitnessGoalsPage() {
         open={showCreateModal}
         onOpenChange={(open) => !open && closeCreateModal()}
         goal={null}
+        purposes={purposes}
         onCreate={createFitnessGoal}
         onUpdate={updateFitnessGoal}
       />
