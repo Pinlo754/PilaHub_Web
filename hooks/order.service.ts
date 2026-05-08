@@ -176,8 +176,11 @@ export const OrderService = {
   ): Promise<OrderType> => {
     const res = await api.put<ApiResponse<OrderType>>(
       `/orders/${orderId}/status`,
+      null,
       {
-        status,
+        params: {
+          status,
+        },
       },
     );
 

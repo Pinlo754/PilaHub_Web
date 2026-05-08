@@ -20,10 +20,10 @@ export const useGHNSimulator = () => {
     setIsLoading(true);
     try {
       const res = await OrderService.getAll();
-      // Filter: CONFIRMED + có shipments
+      // Filter: SHIPPED + có shipments
       const filtered = res.filter(
         (o) =>
-          o.status === ORDER_STATUS.CONFIRMED &&
+          o.status === ORDER_STATUS.SHIPPED &&
           o.shipments &&
           o.shipments.length > 0,
       );
