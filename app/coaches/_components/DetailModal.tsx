@@ -1,4 +1,3 @@
-// app/coaches/_components/DetailModal.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,7 +10,7 @@ import {
 import { CoachType, FeedbackCoachType } from "@/utils/CoachType";
 import { formatLocalDateTime } from "@/utils/day";
 import { getGenderConfig } from "@/utils/uiMapper";
-import { Star } from "lucide-react";
+import { Star, Pencil, Check, X } from "lucide-react";
 import Pagination from "./Pagination";
 
 const PAGE_SIZE = 4;
@@ -21,11 +20,72 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   coach: CoachType;
   feedbacks: FeedbackCoachType[];
+  onUpdatePrice: (coachId: string, price: number) => void;
 };
 
-const DetailModal = ({ open, onOpenChange, coach, feedbacks }: Props) => {
+const validatePrice = (value: string): string | null => {
+  if (!value.trim()) return "Giá không được để trống";
+  const num = Number(value.replace(/\D/g, ""));
+  if (isNaN(num) || num <= 0) return "Giá phải là số dương";
+  if (num < 10_000) return "Giá tối thiểu là 10.000đ";
+  if (num > 10_000_000) return "Giá tối đa là 10.000.000đ";
+  return null;
+};
+
+const DetailModal = ({
+  open,
+  onOpenChange,
+  coach,
+  feedbacks,
+  onUpdatePrice,
+}: Props) => {
   const genderConfig = getGenderConfig(coach.gender);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Price editing state
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState(String(coach.pricePerHour));
+  const [priceError, setPriceError] = useState<string | null>(null);
+
+  const originalPrice = coach.pricePerHour;
+  const parsedPrice = Number(priceInput.replace(/\D/g, ""));
+  const isDirty = parsedPrice !== originalPrice;
+  const isValid = !validatePrice(priceInput) && isDirty;
+
+  const handlePriceChange = (value: string) => {
+    // Chỉ cho nhập số
+    const numeric = value.replace(/\D/g, "");
+    setPriceInput(numeric);
+    setPriceError(validatePrice(numeric));
+  };
+
+  const handlePriceBlur = () => {
+    setPriceError(validatePrice(priceInput));
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingPrice(false);
+    setPriceInput(String(originalPrice));
+    setPriceError(null);
+  };
+
+  const handleSubmitPrice = () => {
+    const error = validatePrice(priceInput);
+    if (error) {
+      setPriceError(error);
+      return;
+    }
+    if (!isDirty) return;
+    onUpdatePrice(coach.coachId, parsedPrice);
+    setIsEditingPrice(false);
+  };
+
+  // Reset khi coach thay đổi (sau update)
+  useEffect(() => {
+    setPriceInput(String(coach.pricePerHour));
+    setPriceError(null);
+    setIsEditingPrice(false);
+  }, [coach.pricePerHour]);
 
   const totalPages = Math.ceil(feedbacks.length / PAGE_SIZE);
   const startIndex = (currentPage - 1) * PAGE_SIZE;
@@ -81,10 +141,8 @@ const DetailModal = ({ open, onOpenChange, coach, feedbacks }: Props) => {
                 </div>
               </div>
 
-              <div className="mt-2">
-                <p
-                  className={`text-sm text-gray-500 transition-all max-h-30 overflow-y-auto pr-1 `}
-                >
+              <div>
+                <p className="text-sm text-gray-500 max-h-28 overflow-y-auto pr-1">
                   {coach.bio}
                 </p>
               </div>
@@ -97,14 +155,77 @@ const DetailModal = ({ open, onOpenChange, coach, feedbacks }: Props) => {
                   value={`${coach.yearsOfExperience} năm`}
                 />
                 <StatCard
-                  label="Giá/giờ"
-                  value={`${coach.pricePerHour.toLocaleString("vi-VN")}đ`}
-                />
-                <StatCard
                   label="Đánh giá TB"
                   value={coach.avgRating.toFixed(1)}
                   highlight
                 />
+
+                {/* Giá/giờ — editable */}
+                <div className="rounded-xl p-3 border bg-gray-50 border-gray-100 space-y-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="text-xs text-gray-500">Giá/giờ</p>
+                    {!isEditingPrice ? (
+                      <button
+                        onClick={() => setIsEditingPrice(true)}
+                        className="p-1 rounded hover:bg-orange-100 text-orange-500 transition"
+                        title="Chỉnh sửa giá"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={handleSubmitPrice}
+                          disabled={!isValid}
+                          className="p-1 rounded hover:bg-green-100 text-green-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          title="Lưu"
+                        >
+                          <Check size={12} />
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="p-1 rounded hover:bg-red-100 text-red-500 transition"
+                          title="Huỷ"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {!isEditingPrice ? (
+                    <p className="text-lg font-semibold text-gray-800">
+                      {coach.pricePerHour.toLocaleString("vi-VN")}đ
+                    </p>
+                  ) : (
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={priceInput}
+                          onChange={(e) => handlePriceChange(e.target.value)}
+                          onBlur={handlePriceBlur}
+                          className="w-full text-sm font-semibold text-gray-800 bg-white border border-orange-200 rounded-md px-2 py-1 focus:outline-none focus:border-orange-400"
+                          autoFocus
+                        />
+                        <span className="text-sm text-gray-500 shrink-0">
+                          đ
+                        </span>
+                      </div>
+                      {priceError && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {priceError}
+                        </p>
+                      )}
+                      {!priceError && priceInput && !isDirty && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Giá chưa thay đổi
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* INFO */}
@@ -153,14 +274,11 @@ const DetailModal = ({ open, onOpenChange, coach, feedbacks }: Props) => {
                     ))}
                   </div>
 
-                  {/* PAGINATION */}
                   {totalPages > 1 && (
                     <Pagination
                       currentPage={currentPage}
                       totalPages={totalPages}
-                      onPageChange={(page) => {
-                        setCurrentPage(page);
-                      }}
+                      onPageChange={setCurrentPage}
                     />
                   )}
                 </>

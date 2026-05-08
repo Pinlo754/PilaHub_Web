@@ -9,6 +9,7 @@ type Props = {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onRowClick: (order: OrderType) => void;
 };
 
 const OrderSection = ({
@@ -16,6 +17,7 @@ const OrderSection = ({
   currentPage,
   totalPages,
   onPageChange,
+  onRowClick,
 }: Props) => {
   return (
     <div className="bg-white rounded-2xl border-2 border-orange-200 p-5">
@@ -35,6 +37,7 @@ const OrderSection = ({
             return (
               <div
                 key={order.orderId}
+                onClick={() => onRowClick(order)}
                 className="p-3 rounded-xl border border-orange-100 hover:bg-orange-50 transition-colors space-y-2.5"
               >
                 {/* Row 1: order number + status */}
@@ -83,7 +86,7 @@ const OrderSection = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2">
+        <div className="mt-5 flex items-center justify-center gap-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 0}

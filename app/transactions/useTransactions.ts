@@ -7,9 +7,10 @@ import {
   getTransactionCategory,
   TransactionCategoryType,
 } from "@/utils/uiMapper";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const PAGE_SIZE = 12;
+const DEBOUNCE_MS = 500;
 
 export const useTransactions = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +18,8 @@ export const useTransactions = () => {
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [accountMap, setAccountMap] = useState<Record<string, AccountType>>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] =
     useState<TransactionCategoryType>("ALL");
@@ -54,13 +57,12 @@ export const useTransactions = () => {
     }
   };
 
-  // FILTER by search term (thêm referenceId)
-  const filteredBySearch = transactions.filter((t) =>
-    [t.transactionId, t.transactionType, t.description, t.referenceId]
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()),
-  );
+  // FILTER by search term (search by email)
+  const filteredBySearch = transactions.filter((t) => {
+    if (!searchTerm.trim()) return true;
+    const account = accountMap[t.accountId];
+    return account?.email.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+  });
 
   // FILTER by category
   const filteredByCategory =
@@ -76,29 +78,37 @@ export const useTransactions = () => {
       ? filteredByCategory
       : filteredByCategory.filter((t) => t.transactionType === selectedType);
 
+  // SORT by newest date first (descending)
+  const sorted = [...filtered].sort(
+    (a, b) =>
+      new Date(b.transactionDate).getTime() -
+      new Date(a.transactionDate).getTime()
+  );
+
   // STATS
-  const totalIncome = filtered
+  const totalIncome = sorted
     .filter((t) => getTransactionFlow(t.transactionType) === "INCOME")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalExpense = filtered
+  const totalExpense = sorted
     .filter((t) => getTransactionFlow(t.transactionType) === "EXPENSE")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const stats = {
-    total: filtered.length,
+    total: sorted.length,
     totalIncome,
     totalExpense,
     netAmount: totalIncome - totalExpense,
   };
 
   // PAGINATION
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice(
+  const paginated = sorted.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+  const startIndex = (safePage - 1) * PAGE_SIZE;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -107,6 +117,12 @@ export const useTransactions = () => {
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
+    setIsSearching(true);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setIsSearching(false);
+    }, DEBOUNCE_MS);
   };
 
   const handleCategoryChange = (category: TransactionCategoryType) => {
@@ -130,6 +146,8 @@ export const useTransactions = () => {
     fetchAll,
     searchTerm,
     setSearchTerm: handleSearchChange,
+    isSearching,
+    startIndex,
     currentPage: safePage,
     totalPages,
     handlePageChange,

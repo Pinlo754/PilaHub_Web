@@ -5,6 +5,7 @@ import LiveSessionReportRow from "./LiveSessionReportRow";
 
 type Props = {
   reports: LiveSessionReportType[];
+  startIndex: number;
   traineeMap: Record<string, TraineeType>;
   coachMap: Record<string, CoachType>;
   onPressReport: (report: LiveSessionReportType) => void;
@@ -13,6 +14,7 @@ type Props = {
 
 const LiveSessionReportTable = ({
   reports,
+  startIndex,
   traineeMap,
   coachMap,
   onPressReport,
@@ -22,6 +24,9 @@ const LiveSessionReportTable = ({
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
+          <th className="text-center py-3 px-4 font-semibold text-orange-700 w-14">
+            STT
+          </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Mã buổi học
           </th>
@@ -48,15 +53,16 @@ const LiveSessionReportTable = ({
       <tbody>
         {reports.length === 0 ? (
           <tr>
-            <td colSpan={7} className="py-10 text-center text-gray-400">
+            <td colSpan={8} className="py-10 text-center text-gray-400">
               Không có báo cáo nào
             </td>
           </tr>
         ) : (
-          reports.map((report) => (
+          reports.map((report, idx) => (
             <LiveSessionReportRow
               key={report.liveSessionId}
               report={report}
+              index={startIndex + idx + 1}
               trainee={traineeMap[report.reporterId] ?? null}
               coach={coachMap[report.reportedUserId] ?? null}
               onPressReport={onPressReport}

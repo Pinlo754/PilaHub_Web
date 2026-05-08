@@ -78,7 +78,7 @@ export default function VendorRegister() {
             <form onSubmit={handleSubmit} className="w-full max-w-3xl space-y-6">
 
                 <h2 className="text-2xl font-bold text-gray-900">
-                    Đăng ký trở thành Vendor
+                    Đăng ký trở thành nhà cung cấp
                 </h2>
 
                 {/* Store Info */}

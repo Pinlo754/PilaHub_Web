@@ -81,12 +81,12 @@ const DetailModal = ({ open, onOpenChange, trainee }: Props) => {
 
           {/* ===== INFO ===== */}
           <div className="border border-orange-100 rounded-xl p-4 space-y-2 text-sm bg-orange-50/40">
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <span className="text-gray-500">Mã học viên</span>
               <span className="font-mono text-gray-600 text-xs">
                 {trainee.traineeId}
               </span>
-            </div>
+            </div> */}
             <div className="flex justify-between">
               <span className="text-gray-500">Ngày đăng ký</span>
               <span className="text-gray-700">

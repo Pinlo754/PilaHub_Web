@@ -140,12 +140,8 @@ export const ProductService = {
     vendorId: string,
     page: number,
     size: number,
+    name?: string,
   ): Promise<PageResponse<ProductType>> => {
-    // const pageable = {
-    //   page,
-    //   size,
-    // };
-
     const res = await api.get<ApiResponse<PageResponse<ProductType>>>(
       `/products`,
       {
@@ -153,7 +149,31 @@ export const ProductService = {
           vendorId,
           page,
           size,
+          ...(name ? { name } : {}),
         },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
+  // UPDATE RULE VIOLATION
+  updateRuleViolation: async (
+    productId: string,
+    ruleViolation: boolean,
+  ): Promise<PageResponse<ProductType>> => {
+    const res = await api.patch<ApiResponse<PageResponse<ProductType>>>(
+      `/products/${productId}/rule-violation`,
+      {
+        ruleViolation,
       },
     );
 

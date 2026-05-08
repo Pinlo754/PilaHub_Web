@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ExerciseType, UpdateExerciseReq, BodyPartType } from "@/utils/ExerciseType";
+import { ExerciseType, UpdateExerciseReq } from "@/utils/ExerciseType";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import {
 } from "@/utils/uiMapper";
 import { formatLocalDateTime } from "@/utils/day";
 import Pagination from "../../_components/Pagination";
+import { BodyPartType } from "@/utils/BodyPartType";
 
 // ── Pages ──────────────────────────────────────────────────────────────────
 const SECTION_PAGES = [

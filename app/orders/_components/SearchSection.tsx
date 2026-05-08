@@ -1,11 +1,22 @@
 "use client";
 
+import { ORDER_STATUS, OrderStatusType } from "@/utils/OrderType";
+import { getOrderStatusConfig } from "@/utils/uiMapper";
 import { ChevronRight, Search } from "lucide-react";
 
 type Props = {
   searchTerm: string;
   onChange: (v: string) => void;
 };
+
+const STATUS_OPTIONS: Array<{ value: OrderStatusType | "ALL"; label: string }> =
+  [
+    { value: "ALL", label: "Tất cả" },
+    ...Object.values(ORDER_STATUS).map((s) => ({
+      value: s,
+      label: getOrderStatusConfig(s).label,
+    })),
+  ];
 
 const SearchSection = ({ searchTerm, onChange }: Props) => {
   return (

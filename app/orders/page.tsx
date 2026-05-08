@@ -31,7 +31,7 @@ export default function OrdersPage() {
 
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Đơn hàng" />
+        <Header title="Đơn hàng" iconName="orders" />
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
             <SearchSection searchTerm={searchTerm} onChange={setSearchTerm} />
@@ -41,6 +41,7 @@ export default function OrdersPage() {
                 orders={pagedOrders}
                 onPressOrder={handleOpenModal}
                 onPayout={handlePayout}
+                pageOffset={currentPage * 12}
               />
             </div>
 

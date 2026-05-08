@@ -8,10 +8,11 @@ import DetailModal from "./DetailModal";
 
 type Props = {
   transactions: TransactionType[];
+  startIndex: number;
   accountMap?: Record<string, AccountType>;
 };
 
-const TransactionTable = ({ transactions, accountMap = {} }: Props) => {
+const TransactionTable = ({ transactions, startIndex, accountMap = {} }: Props) => {
   // STATE
   const [selectedTransaction, setSelectedTransaction] =
     useState<TransactionType | null>(null);
@@ -36,8 +37,8 @@ const TransactionTable = ({ transactions, accountMap = {} }: Props) => {
       <table className="w-full">
         <thead>
           <tr className="border-b-2 border-orange-100">
-            <th className="text-left py-3 px-4 font-semibold text-orange-700">
-              Mã giao dịch
+            <th className="text-center py-3 px-4 font-semibold text-orange-700 w-14">
+              STT
             </th>
             <th className="text-left py-3 px-4 font-semibold text-orange-700">
               Tài khoản
@@ -58,10 +59,11 @@ const TransactionTable = ({ transactions, accountMap = {} }: Props) => {
           </tr>
         </thead>
         <tbody>
-          {transactions.map((transaction) => (
+          {transactions.map((transaction, idx) => (
             <TransactionRow
               key={transaction.transactionId}
               transaction={transaction}
+              index={startIndex + idx + 1}
               accountName={accountMap[transaction.accountId]?.email}
               onClick={() => handleRowClick(transaction)}
             />

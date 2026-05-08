@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CategoryType,
   CreateCategoryReq,
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/useToast";
 import { useConfirm } from "@/hooks/useConfirm";
 
 const PAGE_SIZE = 10;
+const DEBOUNCE_MS = 500;
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
@@ -24,6 +25,7 @@ export const useCategories = () => {
 
   const { toasts, removeToast, showSuccess, showError } = useToast();
   const { confirmState, isConfirmOpen, confirm, closeConfirm } = useConfirm();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ---- API ----
   const fetchAll = async () => {
@@ -38,10 +40,37 @@ export const useCategories = () => {
     }
   };
 
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchTerm(value);
+      setCurrentPage(1);
+
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      debounceRef.current = setTimeout(async () => {
+        setIsLoading(true);
+        try {
+          if (value.trim()) {
+            const res = await CategoryService.searchByName(value.trim());
+            setCategories(res);
+          } else {
+            await fetchAll();
+          }
+        } catch (err: any) {
+          showError(err?.message ?? "Có lỗi xảy ra khi tìm kiếm");
+        } finally {
+          setIsLoading(false);
+        }
+      }, DEBOUNCE_MS);
+    },
+    [fetchAll],
+  );
+
   const createCategory = async (payload: CreateCategoryReq) => {
     setIsLoading(true);
     try {
       await CategoryService.createCategory(payload);
+      setSearchTerm("");
       await fetchAll();
       setShowCreateModal(false);
       showSuccess("Tạo danh mục thành công");
@@ -133,15 +162,13 @@ export const useCategories = () => {
   const closeCreateModal = () => setShowCreateModal(false);
 
   // ---- PAGINATION ----
-  const filtered = categories.filter((c) =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(categories.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice(
+  const paginated = categories.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+  const startIndex = (safePage - 1) * PAGE_SIZE;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -149,15 +176,17 @@ export const useCategories = () => {
 
   useEffect(() => {
     fetchAll();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   return {
     categories,
-    filtered,
     paginated,
     isLoading,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
     currentPage: safePage,
     totalPages,
     handlePageChange,
@@ -177,5 +206,7 @@ export const useCategories = () => {
     confirmState,
     isConfirmOpen,
     closeConfirm,
+    fetchAll,
+    startIndex,
   };
 };

@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/utils/ApiResType";
 import api from "./AxiosInstance";
-import { OrderType } from "@/utils/OrderType";
+import { OrderStatusType, OrderType } from "@/utils/OrderType";
 
 export const OrderService = {
   async getMyOrders(id: string): Promise<ApiResponse<any[]>> {
@@ -259,4 +259,26 @@ export const OrderService = {
   },
 
 
+  // UPDATE ORDER STATUS
+  updateOrderStatus: async (
+    orderId: string,
+    status: OrderStatusType,
+  ): Promise<OrderType> => {
+    const res = await api.put<ApiResponse<OrderType>>(
+      `/orders/${orderId}/status`,
+      {
+        status,
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
 };

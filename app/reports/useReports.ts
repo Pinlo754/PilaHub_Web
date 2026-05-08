@@ -24,6 +24,9 @@ export const useReports = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "RESOLVED" | "UNRESOLVED"
+  >("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedReport, setSelectedReport] =
     useState<LiveSessionReportType | null>(null);
@@ -120,11 +123,22 @@ export const useReports = () => {
     const trainee = traineeMap[r.reporterId];
     const coach = coachMap[r.reportedUserId];
     const term = searchTerm.toLowerCase();
-    return (
+    const isResolved = !!r.resolvedAt;
+
+    // Search filter
+    const matchSearch =
+      !term ||
       r.liveSessionId.toLowerCase().includes(term) ||
       trainee?.fullName.toLowerCase().includes(term) ||
-      coach?.fullName.toLowerCase().includes(term)
-    );
+      coach?.fullName.toLowerCase().includes(term);
+
+    // Status filter
+    const matchStatus =
+      statusFilter === "ALL" ||
+      (statusFilter === "RESOLVED" && isResolved) ||
+      (statusFilter === "UNRESOLVED" && !isResolved);
+
+    return matchSearch && matchStatus;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -133,6 +147,7 @@ export const useReports = () => {
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+  const startIndex = (safePage - 1) * PAGE_SIZE;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -151,6 +166,9 @@ export const useReports = () => {
     isLoading,
     searchTerm,
     setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    startIndex,
     currentPage: safePage,
     totalPages,
     handlePageChange,

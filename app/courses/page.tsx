@@ -44,6 +44,7 @@ export default function CoursesPage() {
     setCurrentPage,
     filterLevel,
     setFilterLevel,
+    startIndex,
   } = useCourses();
 
   return (
@@ -52,7 +53,7 @@ export default function CoursesPage() {
 
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Khóa học" />
+        <Header title="Khóa học" iconName="courses" />
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
             {/* Search and Filter */}
@@ -68,6 +69,7 @@ export default function CoursesPage() {
             <div className="overflow-x-auto">
               <CourseTable
                 courses={courses}
+                startIndex={startIndex}
                 onRowClick={handleRowClick}
                 onToggleStatus={toggleCourseStatus}
                 onDelete={deleteCourse}

@@ -5,15 +5,21 @@ type Props = {
   equipments: EquipmentType[];
   onPressEquipment: (equipment: EquipmentType) => void;
   onDelete: (equipmentId: string, name: string) => void;
+  startIndex: number;
 };
 
-const EquipmentTable = ({ equipments, onDelete, onPressEquipment }: Props) => {
+const EquipmentTable = ({
+  equipments,
+  onDelete,
+  onPressEquipment,
+  startIndex,
+}: Props) => {
   return (
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
-          <th className="text-left py-3 px-4 font-semibold text-orange-700">
-            Mã
+          <th className="text-center py-3 px-4 font-semibold text-orange-700">
+            STT
           </th>
           <th className="text-center py-3 px-4 font-semibold text-orange-700">
             Ảnh
@@ -40,12 +46,13 @@ const EquipmentTable = ({ equipments, onDelete, onPressEquipment }: Props) => {
             </td>
           </tr>
         ) : (
-          equipments.map((eq) => (
+          equipments.map((eq, index) => (
             <EquipmentRow
               key={eq.equipmentId}
               equipment={eq}
               onPressEquipment={onPressEquipment}
               onDelete={onDelete}
+              index={startIndex + index + 1}
             />
           ))
         )}

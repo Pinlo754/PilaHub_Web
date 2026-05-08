@@ -35,6 +35,7 @@ export default function EquipmentsPage() {
     closeCreateModal,
     showCreateModal,
     handleUpdate,
+    startIndex,
   } = useEquipments();
 
   return (
@@ -43,7 +44,7 @@ export default function EquipmentsPage() {
 
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Thiết bị tập" />
+        <Header title="Thiết bị tập" iconName="equipments" />
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
             <SearchSection
@@ -57,6 +58,7 @@ export default function EquipmentsPage() {
                 equipments={paginated}
                 onDelete={handleDelete}
                 onPressEquipment={openDetailModal}
+                startIndex={startIndex}
               />
             </div>
 

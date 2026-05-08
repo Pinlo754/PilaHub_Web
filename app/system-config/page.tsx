@@ -32,7 +32,7 @@ export default function SystemConfigPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Cấu hình hệ thống" />
+        <Header title="Cấu hình hệ thống" iconName="systemConfig" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">

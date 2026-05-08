@@ -6,6 +6,7 @@ import { CheckCheck } from "lucide-react";
 
 type Props = {
   report: LiveSessionReportType;
+  index: number;
   trainee: TraineeType | null;
   coach: CoachType | null;
   onPressReport: (report: LiveSessionReportType) => void;
@@ -31,6 +32,7 @@ const AvatarCell = ({
 
 const LiveSessionReportRow = ({
   report,
+  index,
   trainee,
   coach,
   onPressReport,
@@ -45,6 +47,9 @@ const LiveSessionReportRow = ({
       onClick={() => onPressReport(report)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
+      <td className="py-3 px-4 text-center text-gray-500 font-medium">
+        {index}
+      </td>
       <td className="py-3 px-4 text-gray-500">{shortSessionId}</td>
       <td className="py-3 px-4">
         <AvatarCell

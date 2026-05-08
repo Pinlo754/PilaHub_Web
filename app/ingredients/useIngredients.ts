@@ -1,16 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IngredientService } from "@/hooks/ingredient.service";
 import {
   IngredientWithRulesType,
   CreateIngredientReq,
   UpdateIngredientReq,
   CreateIngredientRuleReq,
+  IngredientType,
 } from "@/utils/IngredientType";
 import { useToast } from "@/hooks/useToast";
 import { useConfirm } from "@/hooks/useConfirm";
 
 export const useIngredients = () => {
   const PAGE_SIZE = 11;
+  const DEBOUNCE_MS = 500;
 
   const [ingredients, setIngredients] = useState<IngredientWithRulesType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,25 +26,56 @@ export const useIngredients = () => {
 
   const { toasts, removeToast, showSuccess, showError } = useToast();
   const { confirmState, isConfirmOpen, confirm, closeConfirm } = useConfirm();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ---- API ----
   const fetchAll = async () => {
     setIsLoading(true);
     try {
-      const allIngredients = await IngredientService.getAll();
-      const withRules: IngredientWithRulesType[] = await Promise.all(
-        allIngredients.map(async (ing) => {
-          const rules = await IngredientService.getRuleById(ing.ingredientId);
-          return { ...ing, ingredientRules: rules };
-        }),
-      );
-      setIngredients(withRules);
+      const list = await IngredientService.getAll();
+      setIngredients(await fetchWithRules(list));
     } catch (err: any) {
       showError(err?.message ?? "Có lỗi xảy ra khi tải dữ liệu");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const fetchWithRules = async (
+    list: IngredientType[],
+  ): Promise<IngredientWithRulesType[]> =>
+    Promise.all(
+      list.map(async (ing) => {
+        const rules = await IngredientService.getRuleById(ing.ingredientId);
+        return { ...ing, ingredientRules: rules };
+      }),
+    );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchTerm(value);
+      setCurrentPage(1);
+
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      debounceRef.current = setTimeout(async () => {
+        setIsLoading(true);
+        try {
+          if (value.trim()) {
+            const list = await IngredientService.searchByName(value.trim());
+            setIngredients(await fetchWithRules(list));
+          } else {
+            await fetchAll();
+          }
+        } catch (err: any) {
+          showError(err?.message ?? "Có lỗi xảy ra khi tìm kiếm");
+        } finally {
+          setIsLoading(false);
+        }
+      }, DEBOUNCE_MS);
+    },
+    [fetchAll],
+  );
 
   const createIngredient = async (payload: CreateIngredientReq) => {
     setIsLoading(true);
@@ -142,15 +175,13 @@ export const useIngredients = () => {
   };
 
   // ---- PAGINATION ----
-  const filtered = ingredients.filter((i) =>
-    i.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(ingredients.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice(
+  const paginated = ingredients.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+  const startIndex = (safePage - 1) * PAGE_SIZE;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -158,6 +189,9 @@ export const useIngredients = () => {
 
   useEffect(() => {
     fetchAll();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   return {
@@ -165,7 +199,7 @@ export const useIngredients = () => {
     isLoading,
     fetchAll,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
     currentPage: safePage,
     totalPages,
     handlePageChange,
@@ -184,5 +218,6 @@ export const useIngredients = () => {
     confirmState,
     isConfirmOpen,
     closeConfirm,
+    startIndex,
   };
 };

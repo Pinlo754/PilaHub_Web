@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { OrderType } from "@/utils/OrderType";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { OrderStatusType, OrderType } from "@/utils/OrderType";
 import { OrderService } from "@/hooks/order.service";
 
-const VENDOR_ID = "96c3c3ca-bafa-4deb-bf7d-cf1f1055b681";
 const ORDER_PAGE_SIZE = 12;
+const DEBOUNCE_MS = 500;
 
 export const useOrders = () => {
   // STATE
@@ -14,6 +14,10 @@ export const useOrders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [statusFilter, setStatusFilter] = useState<OrderStatusType | "ALL">(
+    "ALL",
+  );
 
   // API
   const fetchAll = async () => {
@@ -65,12 +69,30 @@ export const useOrders = () => {
     setSelectedOrder(null);
   };
 
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setIsLoading(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setIsLoading(false);
+      setCurrentPage(0);
+    }, DEBOUNCE_MS);
+  }, []);
+
+  const handleStatusFilterChange = (status: OrderStatusType | "ALL") => {
+    setStatusFilter(status);
+    setCurrentPage(0);
+  };
+
   // DERIVED — filter + paginate client-side
-  const filteredOrders = orders.filter(
-    (o) =>
+  const filteredOrders = orders.filter((o) => {
+    const matchSearch =
       o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.recipientName.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      o.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
   const totalPages = Math.max(
     1,
     Math.ceil(filteredOrders.length / ORDER_PAGE_SIZE),
@@ -83,6 +105,9 @@ export const useOrders = () => {
   // USE EFFECT
   useEffect(() => {
     fetchAll();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   // Reset về page 0 khi search thay đổi
@@ -98,7 +123,9 @@ export const useOrders = () => {
     isLoading,
     errorMsg,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: handleSearchChange,
+    statusFilter,
+    setStatusFilter: handleStatusFilterChange,
     selectedOrder,
     isModalOpen,
     handleOpenModal,

@@ -35,6 +35,7 @@ export default function IngredientsPage() {
     confirmState,
     isConfirmOpen,
     closeConfirm,
+    startIndex,
   } = useIngredients();
 
   return (
@@ -44,7 +45,7 @@ export default function IngredientsPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <Header title="Nguyên liệu" />
+        <Header title="Nguyên liệu" iconName="ingredients" />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
@@ -59,6 +60,7 @@ export default function IngredientsPage() {
                 ingredients={paginated}
                 onPressIngredient={openDetailModal}
                 onToggleActive={toggleActive}
+                startIndex={startIndex}
               />
             </div>
 

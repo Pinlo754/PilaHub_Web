@@ -25,6 +25,28 @@ export const IngredientService = {
     return res.data.data;
   },
 
+  // SEARCH BY NAME
+  searchByName: async (name: string): Promise<IngredientType[]> => {
+    const res = await api.get<ApiResponse<IngredientType[]>>(
+      `/ingredients/search`,
+      {
+        params: {
+          name,
+        },
+      },
+    );
+
+    if (!res.data.success) {
+      throw {
+        type: "BUSINESS_ERROR",
+        message: res.data.message,
+        errorCode: res.data.errorCode,
+      };
+    }
+
+    return res.data.data;
+  },
+
   // GET RULE BY ID
   getRuleById: async (ingredientId: string): Promise<IngredientRuleType[]> => {
     const res = await api.get<ApiResponse<IngredientRuleType[]>>(

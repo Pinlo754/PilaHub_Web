@@ -5,6 +5,7 @@ import { Power, PowerOff } from "lucide-react";
 
 type Props = {
   account: CoachType;
+  index: number;
   onPressAccount: (account: CoachType) => void;
   updateStatusAccount: (accountId: string, active: boolean) => void;
 };
@@ -13,6 +14,7 @@ const AccountRow = ({
   account,
   onPressAccount,
   updateStatusAccount,
+  index,
 }: Props) => {
   const genderConfig = getGenderConfig(account.gender);
   const shortId = `${account.coachId.slice(0, 6)}...`;
@@ -23,7 +25,7 @@ const AccountRow = ({
       onClick={() => onPressAccount(account)}
       className="border-b border-orange-100 hover:bg-orange-50 cursor-pointer"
     >
-      <td className="py-3 px-4 text-gray-500">{shortId}</td>
+      <td className="py-3 px-4 text-gray-500 text-center">{index}</td>
       <td className="py-3 px-4 flex justify-center">
         <img
           src={account.avatarUrl || "/default-logo.png"}

@@ -24,10 +24,22 @@ import {
   Goal,
   Bell,
   Flag,
+  ChevronLeft,
+  ChevronRight,
+  HeartPulse,
+  MessageSquareWarning,
+  Ticket,
+  Tags,
+  Tag,
+  Compass,
+  Target,
+  Leaf,
+  RotateCw,
 } from "lucide-react";
 import { logout } from "@/hooks/auth.service";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 const menuItems = [
   {
@@ -57,9 +69,19 @@ const menuItems = [
     href: "/exercises",
   },
   {
+    icon: HeartPulse,
+    label: "Bộ phận cơ thể",
+    href: "/body-parts",
+  },
+  {
     icon: Dumbbell,
     label: "Thiết bị tập",
     href: "/equipments",
+  },
+  {
+    icon: Target,
+    label: "Mục đích",
+    href: "/purposes",
   },
   {
     icon: Boxes,
@@ -73,12 +95,17 @@ const menuItems = [
   },
   {
     icon: Pill,
+    label: "Thực phẩm chức năng",
+    href: "/supplements",
+  },
+  {
+    icon: Leaf,
     label: "Nguyên liệu",
     href: "/ingredients",
   },
   {
     icon: Goal,
-    label: "Mục tiêu",
+    label: "Mục tiêu tập luyện",
     href: "/goals",
   },
   {
@@ -102,6 +129,26 @@ const menuItems = [
     href: "/reports",
   },
   {
+    icon: MessageSquareWarning,
+    label: "Lý do báo cáo",
+    href: "/report-reasons",
+  },
+  {
+    icon: RotateCw,
+    label: "Lý do hoàn trả",
+    href: "/return-reasons",
+  },
+  {
+    icon: Ticket,
+    label: "Đơn hỗ trợ",
+    href: "/tickets",
+  },
+  {
+    icon: Tag,
+    label: "Loại đơn",
+    href: "/ticket-types",
+  },
+  {
     icon: Bot,
     label: "Tài liệu AI",
     href: "/ai-document",
@@ -116,11 +163,11 @@ const menuItems = [
     label: "Giao dịch",
     href: "/transactions",
   },
-   {
-     icon: Bell,
-     label: "Thông báo",
-     href: "/notification",
-   },
+  {
+    icon: Bell,
+    label: "Thông báo",
+    href: "/notification",
+  },
   {
     icon: Settings,
     label: "Cấu hình hệ thống",
@@ -131,6 +178,12 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [expanded, setExpanded] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("sidebar-expanded") === "true";
+    }
+    return false;
+  });
 
   const handleLogout = async () => {
     const res = await logout();
@@ -139,6 +192,10 @@ export function Sidebar() {
   };
 
   const activeRef = useRef<HTMLAnchorElement | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar-expanded", String(expanded));
+  }, [expanded]);
 
   useEffect(() => {
     if (activeRef.current) {
@@ -150,14 +207,37 @@ export function Sidebar() {
   }, [pathname]);
 
   return (
-    <aside className="w-20 h-screen bg-white border-r border-orange-200 flex flex-col items-center py-6">
+    <aside
+      className={`h-screen bg-white border-r border-orange-200 flex flex-col items-center py-6 transition-all duration-300 ease-in-out ${
+        expanded ? "w-52" : "w-20"
+      }`}
+    >
       {/* Logo */}
-      <Link
-        href="/"
-        className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-sm hover:shadow-lg transition-shadow mb-6"
+      <div
+        className={`flex items-center mb-6 w-full px-4 ${expanded ? "justify-between" : "justify-center"}`}
       >
-        P
-      </Link>
+        <Link
+          href="/"
+          className={`${expanded ? "w-16 h-16" : "w-12 h-12"} relative transition-shadow flex-shrink-0 grow-1`}
+        >
+          <Image
+            src="/logo.png"
+            alt="PilaHub Logo"
+            fill
+            className="object-contain rounded-lg"
+            priority
+          />
+        </Link>
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className={`w-7 h-7 flex-shrink-0 rounded-full border border-orange-200 bg-white flex items-center justify-center text-orange-400 hover:bg-orange-50 transition-all shadow-sm ${
+            expanded ? "" : "absolute left-[68px]"
+          }`}
+          title={expanded ? "Thu nhỏ" : "Mở rộng"}
+        >
+          {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+        </button>
+      </div>
 
       {/* Menu Items */}
       <nav className="flex-1 flex flex-col ml-3 pr-3 gap-4 overflow-y-auto ">
@@ -175,23 +255,34 @@ export function Sidebar() {
               key={index}
               href={item.href}
               ref={isActive ? activeRef : null}
-              className={`w-12 h-12 flex-shrink-0 rounded-lg flex items-center justify-center transition-all ${
+              className={`flex items-center gap-3 rounded-lg transition-all px-3 h-11 flex-shrink-0 ${
+                expanded ? "justify-start" : "justify-center"
+              } ${
                 isActive
                   ? "bg-orange-100 text-orange-600"
                   : "text-gray-500 hover:bg-orange-50"
               }`}
               title={item.label}
             >
-              <Icon size={24} />
+              <Icon size={24} className="flex-shrink-0" />
+              {expanded && (
+                <span className="text-sm font-medium truncate max-w-[120px]">
+                  {item.label}
+                </span>
+              )}
             </Link>
           );
         })}
       </nav>
       <button
-        className="w-12 h-12 mt-6 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-red-600 flex items-center justify-center transition-all"
+        className={`mt-6 mx-3 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-red-600 flex items-center transition-all h-11 px-3 ${
+          expanded ? "w-full gap-3 justify-start" : "w-12 justify-center"
+        }`}
         onClick={() => handleLogout()}
+        title={!expanded ? "Đăng xuất" : undefined}
       >
-        <LogOut size={24} />
+        <LogOut size={24} className="flex-shrink-0" />
+        {expanded && <span className="text-sm font-medium">Đăng xuất</span>}
       </button>
     </aside>
   );

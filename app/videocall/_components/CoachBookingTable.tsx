@@ -3,12 +3,14 @@ import CoachBookingRow from "./CoachBookingRow";
 
 type Props = {
   bookings: CoachBookingType[];
+  startIndex: number;
   onPressBooking: (booking: CoachBookingType) => void;
   onMarkReady: (bookingId: string) => void;
 };
 
 const CoachBookingTable = ({
   bookings,
+  startIndex,
   onPressBooking,
   onMarkReady,
 }: Props) => {
@@ -16,6 +18,9 @@ const CoachBookingTable = ({
     <table className="w-full">
       <thead>
         <tr className="border-b-2 border-orange-100">
+          <th className="text-center py-3 px-4 font-semibold text-orange-700 w-14">
+            STT
+          </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Mã đặt lịch
           </th>
@@ -45,15 +50,16 @@ const CoachBookingTable = ({
       <tbody>
         {bookings.length === 0 ? (
           <tr>
-            <td colSpan={8} className="py-10 text-center text-gray-400">
+            <td colSpan={9} className="py-10 text-center text-gray-400">
               Không có lịch đặt nào cần chuyển trạng thái
             </td>
           </tr>
         ) : (
-          bookings.map((booking) => (
+          bookings.map((booking, idx) => (
             <CoachBookingRow
               key={booking.id}
               booking={booking}
+              index={startIndex + idx + 1}
               onPressBooking={onPressBooking}
               onMarkReady={onMarkReady}
             />

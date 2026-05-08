@@ -485,6 +485,7 @@ export const useCourses = () => {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   // USE EFFECT
   useEffect(() => {
@@ -502,6 +503,7 @@ export const useCourses = () => {
     setSearchTerm: handleSearchChange,
     filterLevel,
     setFilterLevel: handleFilterLevelChange,
+    startIndex,
     showDetailModal,
     openDetailModal,
     closeDetailModal,

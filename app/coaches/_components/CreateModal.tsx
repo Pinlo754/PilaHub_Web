@@ -40,8 +40,16 @@ const validateCreateForm = (form: CreateForm): CreateFormError => {
 
   if (!form.password) {
     errors.password = "Mật khẩu không được để trống";
-  } else if (form.password.length < 6) {
-    errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+  } else if (form.password.length < 8) {
+    errors.password = "Mật khẩu phải có ít nhất 8 ký tự";
+  } else if (!/[A-Z]/.test(form.password)) {
+    errors.password = "Mật khẩu phải có ít nhất 1 chữ in hoa";
+  } else if (!/[a-z]/.test(form.password)) {
+    errors.password = "Mật khẩu phải có ít nhất 1 chữ thường";
+  } else if (!/[0-9]/.test(form.password)) {
+    errors.password = "Mật khẩu phải có ít nhất 1 chữ số";
+  } else if (!/[^A-Za-z0-9]/.test(form.password)) {
+    errors.password = "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
   }
 
   return errors;
@@ -172,7 +180,7 @@ const CreateModal = ({ open, onOpenChange, onSubmit }: Props) => {
                 value={form.password}
                 onChange={(e) => handleChange("password", e.target.value)}
                 onBlur={() => handleBlur("password")}
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 8 ký tự"
                 className="pr-16"
               />
               <button
@@ -183,6 +191,9 @@ const CreateModal = ({ open, onOpenChange, onSubmit }: Props) => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            <p className="text-xs text-gray-400">
+              Ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt
+            </p>
             {touched.password && errors.password && (
               <p className="text-xs text-red-500">{errors.password}</p>
             )}

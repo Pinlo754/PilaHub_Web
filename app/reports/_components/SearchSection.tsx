@@ -5,9 +5,16 @@ import { ChevronRight, Funnel, Plus, Search } from "lucide-react";
 type Props = {
   searchTerm: string;
   onChange: (v: string) => void;
+  statusFilter: "ALL" | "RESOLVED" | "UNRESOLVED";
+  onStatusFilterChange: (status: "ALL" | "RESOLVED" | "UNRESOLVED") => void;
 };
 
-const SearchSection = ({ searchTerm, onChange }: Props) => {
+const SearchSection = ({
+  searchTerm,
+  onChange,
+  statusFilter,
+  onStatusFilterChange,
+}: Props) => {
   return (
     <div className="flex gap-4 mb-6">
       {/* Search */}
@@ -23,10 +30,18 @@ const SearchSection = ({ searchTerm, onChange }: Props) => {
       </div>
 
       {/* Filter */}
-      <button className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-2">
-        <Funnel size={18} />
-        Lọc
-      </button>
+      <div className="flex items-center gap-2 bg-orange-100 rounded-lg px-4 py-2">
+        <Funnel size={18} className="text-orange-700" />
+        <select
+          value={statusFilter}
+          onChange={(e) => onStatusFilterChange(e.target.value as any)}
+          className="bg-transparent text-orange-700 font-medium border-none outline-none cursor-pointer"
+        >
+          <option value="ALL">Tất cả</option>
+          <option value="UNRESOLVED">Chờ xử lý</option>
+          <option value="RESOLVED">Đã xử lý</option>
+        </select>
+      </div>
 
       {/* Create */}
       {/* <button

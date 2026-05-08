@@ -9,6 +9,8 @@ import Pagination from "./_components/Pagination";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import VerifyModal from "./_components/VerifyModal";
 import Tabs from "../accounts/_components/Tabs";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import Toast from "@/components/Toast";
 
 export default function SuppliersPage() {
   // HOOK
@@ -17,12 +19,21 @@ export default function SuppliersPage() {
     isLoading,
     searchTerm,
     setSearchTerm,
-    vendors,
     onPressVendor,
     isVerifyModalOpen,
     onCloseVerifyModal,
     selectedVendor,
     verifyVendor,
+    unverifyVendor,
+    toasts,
+    removeToast,
+    closeConfirm,
+    confirmState,
+    handlePageChange,
+    totalPages,
+    paginated,
+    startIndex,
+    isConfirmOpen,
   } = useSuppliers();
 
   return (
@@ -31,7 +42,7 @@ export default function SuppliersPage() {
 
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Nhà cung cấp" />
+        <Header title="Tài khoản" iconName="accounts" />
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
             {/* Tabs */}
@@ -42,11 +53,19 @@ export default function SuppliersPage() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <VendorTable vendors={vendors} onPressVendor={onPressVendor} />
+              <VendorTable
+                vendors={paginated}
+                startIndex={startIndex}
+                onPressVendor={onPressVendor}
+              />
             </div>
 
             {/* Pagination */}
-            <Pagination />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         </main>
       </div>
@@ -57,7 +76,22 @@ export default function SuppliersPage() {
         onOpenChange={onCloseVerifyModal}
         vendor={selectedVendor}
         onVerify={verifyVendor}
+        onUnverify={unverifyVendor}
       />
+
+      {confirmState && (
+        <ConfirmDialog
+          open={isConfirmOpen}
+          onOpenChange={(open) => !open && closeConfirm()}
+          title={confirmState.title}
+          description={confirmState.description}
+          confirmLabel={confirmState.confirmLabel}
+          variant={confirmState.variant}
+          onConfirm={confirmState.onConfirm}
+        />
+      )}
+
+      <Toast toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

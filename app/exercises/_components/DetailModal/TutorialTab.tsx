@@ -5,9 +5,9 @@ import {
   Wind,
   LoaderCircle,
 } from "lucide-react";
-import { TutorialType } from "@/utils/ExerciseType";
 import TextBlock from "./TextBlock";
 import VideoBlock from "./VideoBlock";
+import { TutorialType } from "@/utils/TutorialType";
 
 type Props = {
   tutorial: TutorialType | null;

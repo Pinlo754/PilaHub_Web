@@ -14,6 +14,8 @@ export default function TransactionsPage() {
     isLoading,
     searchTerm,
     setSearchTerm,
+    isSearching,
+    startIndex,
     currentPage,
     totalPages,
     handlePageChange,
@@ -33,7 +35,7 @@ export default function TransactionsPage() {
 
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Giao dịch" />
+        <Header title="Giao dịch" iconName="transactions" />
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-white rounded-2xl border-2 border-orange-200 shadow-lg p-6">
             <CategoryStats
@@ -45,6 +47,7 @@ export default function TransactionsPage() {
             <SearchSection
               searchTerm={searchTerm}
               onChange={setSearchTerm}
+              isSearching={isSearching}
               selectedType={selectedType}
               onTypeChange={setSelectedType}
               selectedCategory={selectedCategory}
@@ -52,6 +55,7 @@ export default function TransactionsPage() {
 
             <TransactionTable
               transactions={paginated}
+              startIndex={startIndex}
               accountMap={accountMap}
             />
 
