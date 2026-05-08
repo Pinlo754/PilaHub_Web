@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { verifyEmail, resendOtp } from '@/hooks/auth.service'
 import { RotateCw, ShieldCheck } from 'lucide-react'
 
-export default function VerifyOtp() {
+// 1. Component con chứa logic xử lý OTP
+function VerifyOtpContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -103,12 +104,12 @@ export default function VerifyOtp() {
 
           {/* Khối hiển thị thông báo kết quả/lỗi từ API */}
           {apiError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center font-medium">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center font-medium animate-in shake duration-300">
               {apiError}
             </div>
           )}
           {apiSuccess && (
-            <div className="p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm text-center font-medium">
+            <div className="p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm text-center font-medium animate-in fade-in zoom-in duration-300">
               {apiSuccess}
             </div>
           )}
@@ -168,5 +169,23 @@ export default function VerifyOtp() {
         </div>
       </div>
     </div>
+  )
+}
+
+// 2. Component Page chính bọc Suspense
+export default function VerifyOtp() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-orange-600 font-medium">Đang tải trang xác thực...</p>
+          </div>
+        </div>
+      }
+    >
+      <VerifyOtpContent />
+    </Suspense>
   )
 }

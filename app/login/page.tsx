@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,12 +8,12 @@ import { Input } from '@/components/ui/input'
 import { getProfile, login } from '@/hooks/auth.service'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function VendorLogin() {
+// 1. Component con chứa toàn bộ Logic Login
+function LoginFormContent() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   
-  // State quản lý lỗi và thông báo
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState<string | null>(null)
   const [verifiedSuccess, setVerifiedSuccess] = useState<string | null>(null)
@@ -22,21 +22,19 @@ export default function VendorLogin() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // CẬP NHẬT: Tự động bắt tham số từ URL khi chuyển hướng từ trang OTP về
   useEffect(() => {
-    // 1. Kiểm tra trạng thái xác thực thành công
+    // Kiểm tra trạng thái xác thực thành công từ URL
     if (searchParams.get('verified') === 'true') {
       setVerifiedSuccess('Xác thực thành công, mời bạn đăng nhập lại!')
     }
 
-    // 2. Tự động fill email nếu có tham số email trên URL
+    // Tự động điền email nếu có tham số trên URL
     const urlEmail = searchParams.get('email')
     if (urlEmail) {
       setEmail(decodeURIComponent(urlEmail))
     }
   }, [searchParams])
 
-  // Hàm validate phía client
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     
@@ -77,7 +75,6 @@ export default function VendorLogin() {
       }
 
       const role = profileRes.data.role
-      console.log('Role:', role)
       setIsLoading(false)
 
       if (role === 'VENDOR') {
@@ -106,22 +103,18 @@ export default function VendorLogin() {
 
         {/* Form */}
         <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 space-y-5">
-          
-          {/* Thông báo Xác thực OTP thành công */}
           {verifiedSuccess && (
-            <div className="p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm text-center font-medium shadow-sm">
+            <div className="p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm text-center font-medium shadow-sm animate-in fade-in zoom-in duration-300">
               {verifiedSuccess}
             </div>
           )}
 
-          {/* Thông báo lỗi đăng nhập từ API */}
           {apiError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center font-medium">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center font-medium animate-in shake duration-300">
               {apiError}
             </div>
           )}
 
-          {/* Email */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <Input
@@ -139,7 +132,6 @@ export default function VendorLogin() {
             )}
           </div>
 
-          {/* Password */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
             <div className="relative">
@@ -166,7 +158,6 @@ export default function VendorLogin() {
             )}
           </div>
 
-          {/* Remember Me */}
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="rounded border-gray-300 accent-orange-500" />
@@ -177,7 +168,6 @@ export default function VendorLogin() {
             </Link>
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isLoading}
@@ -187,7 +177,6 @@ export default function VendorLogin() {
           </Button>
         </form>
 
-        {/* Sign Up Link */}
         <p className="text-center mt-6 text-gray-600">
           Chưa có tài khoản?{' '}
           <Link href="/vendor/register" className="text-orange-600 font-semibold hover:text-orange-700">
@@ -196,5 +185,23 @@ export default function VendorLogin() {
         </p>
       </div>
     </div>
+  )
+}
+
+// 2. Component Page chính bọc Suspense để tránh lỗi build
+export default function VendorLogin() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-orange-600 font-medium">Đang tải trang đăng nhập...</p>
+          </div>
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   )
 }
