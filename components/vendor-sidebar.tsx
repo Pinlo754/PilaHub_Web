@@ -12,6 +12,7 @@ import {
   User,
   LogOut,
   Boxes,
+  Ticket,
 } from 'lucide-react'
 import { logout } from '@/hooks/auth.service'
 import { useRouter } from 'next/navigation'
@@ -25,6 +26,7 @@ const menuItems = [
   { icon: RotateCcw, label: 'Trả hàng', href: '/vendor/returns' },
   { icon: Wallet, label: 'Ví', href: '/vendor/wallet' },
   // { icon: MessageSquare, label: 'Nhắn tin', href: '/vendor/messages' },
+  { icon: Ticket, label: 'Gửi phiếu yêu cầu', href: '/vendor/ticket' },
   { icon: User, label: 'Hồ sơ', href: '/vendor/profile' },
 ]
 
@@ -79,8 +81,8 @@ export function VendorSidebar() {
         <Link
           href="/vendor/profile"
           className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${pathname?.startsWith('/vendor/profile')
-              ? 'bg-orange-100 text-orange-600'
-              : 'text-gray-500 hover:bg-orange-50'
+            ? 'bg-orange-100 text-orange-600'
+            : 'text-gray-500 hover:bg-orange-50'
             }`}
           title="Hồ sơ"
         >

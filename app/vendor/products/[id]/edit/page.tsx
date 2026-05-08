@@ -8,35 +8,32 @@ import { Button } from '@/components/ui/button'
 import { VendorSidebar } from '@/components/vendor-sidebar'
 import { useFirebaseUpload } from '@/hooks/useFirebaseUpload'
 import { ProductService } from '@/hooks/product.service'
+import { EquipmentService } from '@/hooks/equipment.service'
+import { Supplement, SupplementService } from '@/hooks/supplement.service'
+import { EquipmentType } from '@/utils/EquipmentType'
 
 type Product = {
     productId: string
     categoryId: string
-    refId?: string // 👈 thêm
+    refId?: string
     name: string
     description: string
     imageUrl: string
-    price: number
-    stockQuantity: number
+    price: number | string
+    stockQuantity: number | string
     brand: string
     specifications: string
-    height: number
-    length: number
-    width: number
-    weight: number
+    categoryType: string
+    expiredDate: string
+    height: number | string
+    length: number | string
+    width: number | string
+    weight: number | string
     installationSupported: boolean
     regionSupported: string[]
+    regionSupportedValidForInstallation: boolean
+    expiredDateValidForSupplement: boolean
 }
-
-const VIETNAM_PROVINCES = [
-    { label: 'Hà Nội', value: 'HN' },
-    { label: 'Hồ Chí Minh', value: 'HCM' },
-    { label: 'Đà Nẵng', value: 'DN' },
-    { label: 'Hải Phòng', value: 'HP' },
-    { label: 'Cần Thơ', value: 'CT' },
-    { label: 'Bình Dương', value: 'BD' },
-    { label: 'Đồng Nai', value: 'DNA' }
-]
 
 const initialState: Product = {
     productId: '',
@@ -45,23 +42,35 @@ const initialState: Product = {
     name: '',
     description: '',
     imageUrl: '',
-    price: 0,
-    stockQuantity: 0,
+    price: '',
+    stockQuantity: '',
     brand: '',
     specifications: '',
-    height: 0,
-    length: 0,
-    width: 0,
-    weight: 0,
+    categoryType: 'SUPPLEMENT',
+    expiredDate: '', // Bắt đầu bằng rỗng để user tự chọn
+    height: '',
+    length: '',
+    width: '',
+    weight: '',
     installationSupported: false,
-    regionSupported: []
+    regionSupported: [],
+    regionSupportedValidForInstallation: true,
+    expiredDateValidForSupplement: true
 }
+
+type RefItem = EquipmentType | Supplement
+type RefOption = {
+    id: string;
+    name: string;
+};
 
 export default function ProductFormPage() {
     const [formData, setFormData] = useState<Product>(initialState)
     const [loadingPage, setLoadingPage] = useState(true)
     const [loadingSubmit, setLoadingSubmit] = useState(false)
-
+    const [errors, setErrors] = useState<{ expiredDate?: string; regionSupported?: string }>({})
+    const [selectedType, setSelectedType] = useState('');
+    const [refList, setRefList] = useState<RefOption[]>([]);
     const { uploadImage, loading: uploading } = useFirebaseUpload()
 
     const params = useParams()
@@ -70,25 +79,132 @@ export default function ProductFormPage() {
     const id = params?.id as string | undefined
     const isEdit = !!id
     const [categories, setCategories] = useState<any[]>([])
-    const [refs, setRefs] = useState<any[]>([])
-    // 🔥 FETCH nếu là EDIT
+    const [provinces, setProvinces] = useState<any[]>([])
+
+    const handleCategoryTypeChange = async (event: any) => {
+        const categoryType = event.target.value;
+        setSelectedType(categoryType);
+
+        try {
+            let newRefs: RefOption[] = [];
+
+            switch (categoryType) {
+                case "EQUIPMENT": {
+                    const res = await EquipmentService.getAll();
+                    newRefs = res.map((item) => ({
+                        id: item.equipmentId,
+                        name: item.name,
+                    }));
+                    break;
+                }
+
+                case "SUPPLEMENT": {
+                    const res = await SupplementService.getAll();
+                    newRefs = res.data.map((item) => ({
+                        id: item.supplementId,
+                        name: item.name,
+                    }));
+                    break;
+                }
+
+                default:
+                    newRefs = [];
+            }
+
+            setRefList(newRefs);
+        } catch (error) {
+            console.error("Lỗi khi fetch dữ liệu:", error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchRefs = async () => {
+            try {
+                let newRefs: RefOption[] = [];
+
+                switch (formData.categoryType) {
+                    case "EQUIPMENT": {
+                        const res = await EquipmentService.getAll();
+                        newRefs = res.map((item) => ({
+                            id: item.equipmentId,
+                            name: item.name,
+                        }));
+                        break;
+                    }
+
+                    case "SUPPLEMENT": {
+                        const res = await SupplementService.getAll();
+                        newRefs = res.data.map((item) => ({
+                            id: item.supplementId,
+                            name: item.name,
+                        }));
+                        break;
+                    }
+                }
+
+                setRefList(newRefs);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchRefs();
+    }, [formData.categoryType]);
+
+    const toValue = (str: string) => {
+        return str
+            .normalize("NFD") // tách dấu
+            .replace(/[\u0300-\u036f]/g, "") // xóa dấu
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
+            .replace(/[^a-zA-Z0-9\s]/g, "") // bỏ ký tự đặc biệt (-,...)
+            .replace(/\s+/g, "") // xóa khoảng trắng
+            .toLowerCase();
+    };
+
+    const transformAndSort = (data: any[]) => {
+        return data
+            .map((item) => ({
+                label: item.ProvinceName,
+                value: toValue(item.ProvinceName),
+                id: item.ProvinceID,
+                code: item.Code,
+            }))
+            .sort((a, b) =>
+                a.label.localeCompare(b.label, "vi", { sensitivity: "base" })
+            );
+    };
+
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                const res = await ProductService.getProvinces()
+                setProvinces(transformAndSort(res.data))
+            }
+            catch (err) {
+                console.error('Failed to load provinces', err)
+            }
+        }
+        fetchProvinces()
+    }, [])
+
+    const getNumberValue = (value: string | number) =>
+        typeof value === 'number' ? value : Number(value) || 0
+
     useEffect(() => {
         const fetchMeta = async () => {
             try {
-                const [cateRes, refRes] = await Promise.all([
-                    ProductService.getAllCategory(),
-                    ProductService.getAllRef()
+                const [cateRes] = await Promise.all([
+                    ProductService.getAllCategory()
                 ])
 
                 setCategories(cateRes.data || [])
-                setRefs(refRes.data || [])
             } catch (err) {
                 console.error(err)
             }
         }
 
         fetchMeta()
-
 
         if (!isEdit) {
             setLoadingPage(false)
@@ -100,10 +216,25 @@ export default function ProductFormPage() {
                 const res = await ProductService.getProductById(id!)
 
                 if (res.success && res.data) {
+                    let formattedDate = initialState.expiredDate
+                    if (res.data.expiredDate) {
+                        formattedDate = res.data.expiredDate.split('T')[0]
+                    }
+
                     setFormData({
                         ...res.data,
+                        price: getNumberValue(res.data.price),
+                        stockQuantity: getNumberValue(res.data.stockQuantity),
+                        height: getNumberValue(res.data.height),
+                        length: getNumberValue(res.data.length),
+                        width: getNumberValue(res.data.width),
+                        weight: getNumberValue(res.data.weight),
+                        expiredDate: formattedDate,
+                        categoryType: res.data.categoryType || 'SUPPLEMENT',
                         regionSupported: res.data.regionSupported || [],
-                        installationSupported: res.data.installationSupported ?? false
+                        installationSupported: res.data.installationSupported ?? false,
+                        regionSupportedValidForInstallation: res.data.regionSupportedValidForInstallation ?? true,
+                        expiredDateValidForSupplement: res.data.expiredDateValidForSupplement ?? true
                     })
                 }
             } catch (err) {
@@ -117,7 +248,6 @@ export default function ProductFormPage() {
         fetchProduct()
     }, [id, isEdit])
 
-    // 📸 Upload
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
@@ -130,72 +260,147 @@ export default function ProductFormPage() {
         }
     }
 
-    // 🧠 Input
+    // --- CÁC HÀM VALIDATE INLINE ---
+
+    const validateExpiredDate = (dateString: string) => {
+        if (!dateString) return 'Vui lòng chọn ngày hết hạn'
+        const selectedDate = new Date(dateString)
+        const minValidDate = new Date()
+        minValidDate.setFullYear(minValidDate.getFullYear() + 1) // HSD phải > 1 năm từ bây giờ
+
+        if (selectedDate <= minValidDate) {
+            return 'Hạn sử dụng phải lớn hơn 1 năm kể từ hiện tại'
+        }
+        return undefined
+    }
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        if (name === 'expiredDate') {
+            const errMsg = validateExpiredDate(value)
+            setErrors(prev => ({ ...prev, expiredDate: errMsg }))
+        }
+    }
+
     const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value, type } = e.target
 
-        setFormData(prev => ({
-            ...prev,
-            [name]:
-                type === 'checkbox'
-                    ? (e.target as HTMLInputElement).checked
-                    : [
-                        'price',
-                        'stockQuantity',
-                        'height',
-                        'width',
-                        'length',
-                        'weight'
-                    ].includes(name)
-                        ? Number(value) || 0
-                        : value
-        }))
+        setFormData(prev => {
+            let finalValue: any = value
+
+            if (type === 'checkbox') {
+                finalValue = (e.target as HTMLInputElement).checked
+            } else if (
+                ['price', 'stockQuantity', 'height', 'width', 'length', 'weight'].includes(name)
+            ) {
+                finalValue = Number(value) || 0
+            }
+
+            const newData = { ...prev, [name]: finalValue }
+
+            // Lập tức kiểm tra validate nếu user bật Hỗ trợ lắp đặt
+            if (name === 'installationSupported') {
+                if (finalValue && newData.regionSupported.length === 0) {
+                    setErrors(errs => ({ ...errs, regionSupported: 'Vui lòng chọn ít nhất 1 khu vực hỗ trợ' }))
+                } else {
+                    setErrors(errs => ({ ...errs, regionSupported: undefined }))
+                    if (!finalValue) {
+                        newData.regionSupported = [] // Xóa danh sách nếu tắt chức năng
+                    }
+                }
+            }
+
+            // Valid inline cho date (nếu đổi bằng picker)
+            if (name === 'expiredDate') {
+                setErrors(errs => ({ ...errs, expiredDate: validateExpiredDate(finalValue) }))
+            }
+
+            return newData
+        })
     }
 
-    // 🌍 Region
     const toggleRegion = (code: string) => {
         setFormData(prev => {
             const exists = prev.regionSupported.includes(code)
+            const newRegions = exists
+                ? prev.regionSupported.filter(r => r !== code)
+                : [...prev.regionSupported, code]
+
+            // Cập nhật validation lỗi ngay lập tức
+            if (prev.installationSupported && newRegions.length === 0) {
+                setErrors(errs => ({ ...errs, regionSupported: 'Vui lòng chọn ít nhất 1 khu vực hỗ trợ' }))
+            } else {
+                setErrors(errs => ({ ...errs, regionSupported: undefined }))
+            }
 
             return {
                 ...prev,
-                regionSupported: exists
-                    ? prev.regionSupported.filter(r => r !== code)
-                    : [...prev.regionSupported, code]
+                regionSupported: newRegions
             }
         })
     }
 
-    // ✅ Validate
-    const validate = () => {
+    const validateForm = () => {
+        const price = getNumberValue(formData.price)
+        let isValid = true
+        const newErrors: typeof errors = {}
+
         if (!formData.name.trim()) {
             alert('Nhập tên sản phẩm')
-            return false
+            isValid = false
         }
-        if (!formData.price || formData.price <= 0) {
+        if (!formData.categoryId) {
+            alert('Vui lòng chọn danh mục')
+            isValid = false
+        }
+        if (price <= 0) {
             alert('Giá phải > 0')
-            return false
+            isValid = false
         }
-        return true
+
+        if (formData.categoryType === 'SUPPLEMENT') {
+             const dateErr = validateExpiredDate(formData.expiredDate)
+             if (dateErr) {
+                 newErrors.expiredDate = dateErr
+                 isValid = false
+             }
+        }
+
+        if (formData.installationSupported && formData.regionSupported.length === 0) {
+            newErrors.regionSupported = 'Vui lòng chọn ít nhất 1 khu vực hỗ trợ'
+            isValid = false
+        }
+
+        setErrors(newErrors)
+
+        return isValid
     }
 
-    // 🚀 Submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!validate()) return
+        if (!validateForm()) return
 
         try {
             setLoadingSubmit(true)
 
+            const payload = {
+                ...formData,
+                price: Number(formData.price),
+                stockQuantity: Number(formData.stockQuantity),
+                height: Number(formData.height),
+                length: Number(formData.length),
+                width: Number(formData.width),
+                weight: Number(formData.weight),
+                expiredDate: formData.expiredDate ? new Date(formData.expiredDate).toISOString() : null
+            }
+
             if (isEdit) {
-                await ProductService.updateProduct(formData.productId, formData)
+                await ProductService.updateProduct(formData.productId, payload)
                 alert('Cập nhật thành công!')
             } else {
-                await ProductService.createProduct(formData)
+                await ProductService.createProduct(payload)
                 alert('Tạo sản phẩm thành công!')
                 setFormData(initialState)
             }
@@ -225,7 +430,6 @@ export default function ProductFormPage() {
             <VendorSidebar />
 
             <div className="flex-1 p-6">
-                {/* HEADER */}
                 <div className="mb-6">
                     <Link
                         href="/vendor/products"
@@ -239,12 +443,15 @@ export default function ProductFormPage() {
                     </h1>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex gap-6">
-
-                    {/* ===== LEFT ===== */}
+                <form
+                    onSubmit={handleSubmit}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                    className="flex gap-6"
+                >
+                    {/* ===== LEFT BODY ===== */}
                     <div className="w-3/4 flex flex-col gap-6">
 
-                        {/* BASIC */}
+                        {/* BASIC DETAILS */}
                         <div className="card">
                             <h2 className="text-lg font-semibold">Thông tin cơ bản</h2>
 
@@ -272,6 +479,23 @@ export default function ProductFormPage() {
                                     />
                                 </div>
 
+                                {/* Category Type */}
+                                <div className="form-group">
+                                    <label className="label">Loại danh mục</label>
+                                    <select
+                                        name="categoryType"
+                                        value={formData.categoryType}
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            handleCategoryTypeChange(e);
+                                        }}
+                                        className="input"
+                                    >
+                                        <option value="SUPPLEMENT">Thực phẩm chức năng</option>
+                                        <option value="EQUIPMENT">Thiết bị tập</option>
+                                    </select>
+                                </div>
+
                                 {/* Category */}
                                 <div className="form-group">
                                     <label className="label">Danh mục</label>
@@ -290,9 +514,9 @@ export default function ProductFormPage() {
                                     </select>
                                 </div>
 
-                                {/* Ref */}
+                                {/* Ref Product */}
                                 <div className="form-group">
-                                    <label className="label">Sản phẩm tham chiếu</label>
+                                    <label className="label">Sản phẩm tham chiếu (Ref)</label>
                                     <select
                                         name="refId"
                                         value={formData.refId || ''}
@@ -300,7 +524,7 @@ export default function ProductFormPage() {
                                         className="input"
                                     >
                                         <option value="">-- Không chọn --</option>
-                                        {refs.map(r => (
+                                        {refList.map((r) => (
                                             <option key={r.id} value={r.id}>
                                                 {r.name}
                                             </option>
@@ -335,6 +559,23 @@ export default function ProductFormPage() {
                                     />
                                 </div>
 
+                                {/* Expired Date (Chỉ hiển thị nếu là Thực phẩm bổ sung) */}
+                                {formData.categoryType === 'SUPPLEMENT' && (
+                                    <div className="form-group">
+                                        <label className="label">Ngày hết hạn (Expired Date)</label>
+                                        <input
+                                            type="date"
+                                            name="expiredDate"
+                                            value={formData.expiredDate}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            className={`input ${errors.expiredDate ? 'border-red-500 bg-red-50' : ''}`}
+                                        />
+                                        {errors.expiredDate && (
+                                            <span className="text-red-500 text-xs mt-1">{errors.expiredDate}</span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Description */}
@@ -345,149 +586,161 @@ export default function ProductFormPage() {
                                     value={formData.description}
                                     onChange={handleChange}
                                     className="input"
+                                    rows={4}
                                 />
                             </div>
                         </div>
 
-                        {/* SIZE */}
-                        <div className='grid grid-cols-2 gap-2'>
-                            <div className="col-span-1 card">
-                                <h2>Kích thước & cân nặng</h2>
+                        {/* SUPPORTED REGIONS / INSTALLATION */}
+                        <div className="card">
+                            <h2 className="text-lg font-semibold">Hỗ trợ lắp đặt & Vận chuyển</h2>
 
-                                <div className="grid grid-cols-4 gap-4 mt-4">
+                            <div className="flex items-center gap-3 mt-4 mb-2">
+                                <input
+                                    type="checkbox"
+                                    name="installationSupported"
+                                    id="installationSupported"
+                                    checked={formData.installationSupported}
+                                    onChange={handleChange}
+                                    className="checkbox"
+                                />
+                                <label htmlFor="installationSupported" className="label text-sm cursor-pointer select-none mb-0">
+                                    Sản phẩm có hỗ trợ lắp đặt (Dành cho Thiết bị)
+                                </label>
+                            </div>
 
-                                    {/* Height */}
-                                    <div className="input-group">
-                                        <input
-                                            type="number"
-                                            name="height"
-                                            value={formData.height}
-                                            onChange={handleChange}
-                                            className="input has-unit"
-                                            placeholder="Height"
-                                        />
-                                        <span className="unit">cm</span>
+                            {/* Conditional Rendering của Region */}
+                            {formData.installationSupported && (
+                                <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                                    <label className="label font-semibold">Chọn khu vực hỗ trợ:</label>
+                                    {errors.regionSupported && (
+                                        <p className="text-red-500 text-xs mb-2">{errors.regionSupported}</p>
+                                    )}
+                                    <div className="region-container mt-2">
+                                        {provinces.map(item => {
+                                            const isActive = formData.regionSupported?.includes(item.value)
+                                            return (
+                                                <button
+                                                    key={item.value}
+                                                    type="button"
+                                                    onClick={() => toggleRegion(item.value)}
+                                                    className={`region-item ${isActive ? 'active' : ''}`}
+                                                >
+                                                    {item.label}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* PACKAGING SIZE & TECH SPECS */}
+                        <div className='grid grid-cols-2 gap-4'>
+                            <div className="card">
+                                <h2 className="text-lg font-semibold">Kích thước đóng gói & Cân nặng</h2>
+
+                                <div className="grid grid-cols-2 gap-4 mt-4">
+                                    <div className="form-group">
+                                        <label className="text-xs text-gray-500 mb-1">Chiều cao</label>
+                                        <div className="input-group">
+                                            <input
+                                                type="number"
+                                                name="height"
+                                                value={formData.height}
+                                                onChange={handleChange}
+                                                className="input has-unit"
+                                                placeholder="Height"
+                                            />
+                                            <span className="unit">cm</span>
+                                        </div>
                                     </div>
 
-                                    {/* Width */}
-                                    <div className="input-group">
-                                        <input
-                                            type="number"
-                                            name="width"
-                                            value={formData.width}
-                                            onChange={handleChange}
-                                            className="input has-unit"
-                                            placeholder="Width"
-                                        />
-                                        <span className="unit">cm</span>
+                                    <div className="form-group">
+                                        <label className="text-xs text-gray-500 mb-1">Chiều rộng</label>
+                                        <div className="input-group">
+                                            <input
+                                                type="number"
+                                                name="width"
+                                                value={formData.width}
+                                                onChange={handleChange}
+                                                className="input has-unit"
+                                                placeholder="Width"
+                                            />
+                                            <span className="unit">cm</span>
+                                        </div>
                                     </div>
 
-                                    {/* Length */}
-                                    <div className="input-group">
-                                        <input
-                                            type="number"
-                                            name="length"
-                                            value={formData.length}
-                                            onChange={handleChange}
-                                            className="input has-unit"
-                                            placeholder="Length"
-                                        />
-                                        <span className="unit">cm</span>
+                                    <div className="form-group">
+                                        <label className="text-xs text-gray-500 mb-1">Chiều dài</label>
+                                        <div className="input-group">
+                                            <input
+                                                type="number"
+                                                name="length"
+                                                value={formData.length}
+                                                onChange={handleChange}
+                                                className="input has-unit"
+                                                placeholder="Length"
+                                            />
+                                            <span className="unit">cm</span>
+                                        </div>
                                     </div>
 
-                                    {/* Weight */}
-                                    <div className="input-group">
-                                        <input
-                                            type="number"
-                                            name="weight"
-                                            value={formData.weight}
-                                            onChange={handleChange}
-                                            className="input has-unit"
-                                            placeholder="Weight"
-                                        />
-                                        <span className="unit">g</span>
+                                    <div className="form-group">
+                                        <label className="text-xs text-gray-500 mb-1">Trọng lượng</label>
+                                        <div className="input-group">
+                                            <input
+                                                type="number"
+                                                name="weight"
+                                                value={formData.weight}
+                                                onChange={handleChange}
+                                                className="input has-unit"
+                                                placeholder="Weight"
+                                            />
+                                            <span className="unit">g</span>
+                                        </div>
                                     </div>
-
                                 </div>
                             </div>
 
-                            <div className="col-span-1 card">
-                                <h2>Thông số kỹ thuật</h2>
+                            <div className="card">
+                                <h2 className="text-lg font-semibold">Thông số kỹ thuật</h2>
                                 <textarea
                                     name="specifications"
                                     value={formData.specifications}
                                     onChange={handleChange}
-                                    className="input mt-4"
+                                    className="input mt-4 h-28"
+                                    placeholder="Ví dụ: 180cm x 60cm, 6mm thickness"
                                 />
                             </div>
                         </div>
 
-                        {/* REGION */}
-                        <div className="card">
-                            <h2>Khu vực hỗ trợ</h2>
-
-                            <div className="region-container mt-4">
-                                {VIETNAM_PROVINCES.map(item => {
-                                    const isActive = formData.regionSupported?.includes(item.value)
-
-                                    return (
-                                        <button
-                                            key={item.value}
-                                            type="button"
-                                            onClick={() => toggleRegion(item.value)}
-                                            className={`region-item ${isActive ? 'active' : ''}`}
-                                        >
-                                            {item.label}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-
-                        {/* SPEC */}
-
-
                     </div>
 
-                    {/* ===== RIGHT ===== */}
+                    {/* ===== RIGHT SIDEBAR ===== */}
                     <div className="w-1/4 flex flex-col gap-6">
 
-                        {/* IMAGE */}
+                        {/* IMAGE UPLOAD */}
                         <div className="card">
-                            <h2>Hình ảnh</h2>
+                            <h2 className="text-lg font-semibold mb-2">Hình ảnh sản phẩm</h2>
 
                             {formData.imageUrl && (
-                                <img src={formData.imageUrl} className="preview" />
+                                <img src={formData.imageUrl} alt="Preview" className="preview mb-2" />
                             )}
 
-                            <label className="upload mt-2">
-                                <Upload />
+                            <label className="upload">
+                                <Upload size={16} />
                                 {uploading ? 'Đang upload...' : 'Upload ảnh'}
                                 <input type="file" hidden onChange={handleFileChange} />
                             </label>
                         </div>
 
-                        {/* INSTALL */}
-                        <div className="card flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                name="installationSupported"
-                                checked={formData.installationSupported}
-                                onChange={handleChange}
-                                className="checkbox"
-                            />
-                            <label className="label cursor-pointer">
-                                Hỗ trợ lắp đặt
-                            </label>
-                        </div>
-
-                        {/* ACTION */}
+                        {/* ACTION BUTTON */}
                         <div className="card">
                             <Button
                                 type="submit"
-                                disabled={loadingSubmit}
-                                className="w-full bg-green-600"
+                                disabled={loadingSubmit || uploading}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white"
                             >
                                 {loadingSubmit
                                     ? isEdit
@@ -500,97 +753,111 @@ export default function ProductFormPage() {
                         </div>
 
                     </div>
-
                 </form>
             </div>
 
-
-
-            {/* STYLE */}
+            {/* STYLES */}
             <style jsx>{`
-      .card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #eee;
-      }
-
-      .input {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-      }
-
-      .region-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .region-item {
-        padding: 6px 12px;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        cursor: pointer;
-      }
-
-      .region-item.active {
-        background: orange;
-        color: white;
-        border: none;
-      }
-
-      .upload {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-
-        padding: 10px 14px;
-        border: 1px dashed #ccc;
-        border-radius: 8px;
-        text-align: center;
-
-        cursor: pointer;
-        font-size: 13px;
-        color: #555;
-
-        transition: all 0.2s;
-      }
-
-      .upload:hover {
-        border-color: orange;
-        background: #fff7ed;
-      }
-
-      .preview {
-        width: 100%;
-        margin-top: 10px;
-        border-radius: 10px;
-      }
-        .input-group {
-        position: relative;
-      }
-
-      .has-unit {
-        padding-right: 40px;
-      }
-
-      .unit {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 13px;
-        color: #888;
-      }
-
-      .checkbox {
-        width: 25px;
-        height: 25px;
-        accent-color: #16a34a;
-      }
-    `}</style>
+                    .card {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 12px;
+                        border: 1px solid #eee;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                    }
+                    .label {
+                        display: block;
+                        font-size: 14px;
+                        font-weight: 500;
+                        margin-bottom: 6px;
+                        color: #333;
+                    }
+                    .input {
+                        width: 100%;
+                        padding: 10px;
+                        border-radius: 8px;
+                        border: 1px solid #ddd;
+                        font-size: 14px;
+                        background-color: #fff;
+                        transition: all 0.2s;
+                    }
+                    .input:focus {
+                        outline: none;
+                        border-color: orange;
+                    }
+                    .region-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                    }
+                    .region-item {
+                        padding: 6px 14px;
+                        border-radius: 20px;
+                        border: 1px solid #ddd;
+                        cursor: pointer;
+                        font-size: 13px;
+                        background: #fff;
+                        transition: all 0.2s;
+                    }
+                    .region-item:hover {
+                        border-color: orange;
+                    }
+                    .region-item.active {
+                        background: orange;
+                        color: white;
+                        border-color: orange;
+                    }
+                    .upload {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        padding: 10px 14px;
+                        border: 1px dashed #ccc;
+                        border-radius: 8px;
+                        text-align: center;
+                        cursor: pointer;
+                        font-size: 13px;
+                        color: #555;
+                        transition: all 0.2s;
+                    }
+                    .upload:hover {
+                        border-color: orange;
+                        background: #fff7ed;
+                        color: orange;
+                    }
+                    .preview {
+                        width: 100%;
+                        max-height: 200px;
+                        object-fit: cover;
+                        border-radius: 10px;
+                        border: 1px solid #eee;
+                    }
+                    .input-group {
+                        position: relative;
+                    }
+                    .has-unit {
+                        padding-right: 40px;
+                    }
+                    .unit {
+                        position: absolute;
+                        right: 12px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        font-size: 13px;
+                        color: #888;
+                    }
+                    .checkbox {
+                        width: 20px;
+                        height: 20px;
+                        accent-color: #16a34a;
+                        cursor: pointer;
+                    }
+                    .form-group {
+                        display: flex;
+                        flex-direction: column;
+                    }
+                `}</style>
         </div>
     )
 }
