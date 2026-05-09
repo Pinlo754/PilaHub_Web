@@ -24,9 +24,6 @@ const CourseTable = ({
             STT
           </th>
           <th className="text-left py-3 px-4 font-semibold text-orange-700">
-            Mã
-          </th>
-          <th className="text-left py-3 px-4 font-semibold text-orange-700">
             Tên khóa học
           </th>
           <th className="text-center py-3 px-4 font-semibold text-orange-700">

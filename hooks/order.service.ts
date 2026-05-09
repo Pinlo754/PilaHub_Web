@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/utils/ApiResType";
 import api from "./AxiosInstance";
-import { OrderStatusType, OrderType } from "@/utils/OrderType";
+import { OrderStatusType, OrderType, ShipmentStatusType, ShipmentType } from "@/utils/OrderType";
 
 export const OrderService = {
   async getMyOrders(id: string): Promise<ApiResponse<any[]>> {
@@ -204,6 +204,22 @@ export const OrderService = {
     }
   },
 
+  async getReturnById(id: string): Promise<ApiResponse<any>> {
+    try {
+      const res = await api.get(`/order-returns/${id}`);
+
+      return res.data;
+    } catch (e: any) {
+      return {
+        success: false,
+        message: e.response?.data?.message || e.message || "Unknown error",
+        data: [],
+        errorCode: e.response?.data?.errorCode ?? null,
+        timestamp: Date.now(),
+      };
+    }
+  },
+
   async approveReturn(id: string): Promise<ApiResponse<any>> {
     try {
       const res = await api.patch(`/order-returns/${id}/approve`);
@@ -259,15 +275,18 @@ export const OrderService = {
   },
 
 
-  // UPDATE ORDER STATUS
-  updateOrderStatus: async (
-    orderId: string,
-    status: OrderStatusType,
-  ): Promise<OrderType> => {
-    const res = await api.put<ApiResponse<OrderType>>(
-      `/orders/${orderId}/status`,
+  // UPDATE SHIPMENT STATUS
+  updateShipmentStatus: async (
+    shipmentId: string,
+    status: ShipmentStatusType,
+  ): Promise<ShipmentType> => {
+    const res = await api.put<ApiResponse<ShipmentType>>(
+      `/shipments/${shipmentId}/status`,
+      null,
       {
-        status,
+        params: {
+          status,
+        },
       },
     );
 

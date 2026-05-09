@@ -14,6 +14,8 @@ export type DashboardType = {
   totalCoaches: number;
   transactionsToday: number;
   totalGrossMonthly: number;
+  totalRefundMonthly: number;
+  totalNetRevenueMonthly: number;
   grossMonthlyOfYear: GrossMonthType[];
   coachesByAvgRating: CoachType[];
 };

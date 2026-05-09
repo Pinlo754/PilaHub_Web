@@ -22,7 +22,6 @@ const CourseRow = ({
   // VARIABLE
   const activeConfig = getActiveConfig(course.active);
   const levelConfig = getLevelConfig(course.level);
-  const shortId = `${course.courseId.slice(0, 6)}...`;
 
   return (
     <tr
@@ -32,7 +31,6 @@ const CourseRow = ({
       <td className="py-3 px-4 text-center text-gray-500 font-medium">
         {index}
       </td>
-      <td className="py-3 px-4 text-gray-500">{shortId}</td>
       <td className="py-3 px-4 text-gray-700">{course.name}</td>
       <td className="py-3 px-4 text-center">
         <span

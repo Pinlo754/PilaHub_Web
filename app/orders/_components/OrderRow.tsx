@@ -31,9 +31,9 @@ const OrderRow = ({ order, onPressOrder, onPayout, index }: Props) => {
       <td className="py-1 px-4 text-center">
         <span title={order.paid ? "Đã thanh toán" : "Chưa thanh toán"}>
           {order.paid ? (
-            <CheckCircle2 size={18} className="text-green-500 inline" />
+            <CheckCircle2 size={24} className="text-green-500 inline" />
           ) : (
-            <XCircle size={18} className="text-red-500 inline" />
+            <XCircle size={24} className="text-red-500 inline" />
           )}
         </span>
       </td>
@@ -49,7 +49,7 @@ const OrderRow = ({ order, onPressOrder, onPayout, index }: Props) => {
       </td>
       <td
         className="py-1 px-4 text-center"
-        onClick={(e) => e.stopPropagation()} // chặn mở modal khi bấm nút
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={() => canPayout && onPayout(order.orderId)}
@@ -61,10 +61,10 @@ const OrderRow = ({ order, onPressOrder, onPayout, index }: Props) => {
                 : "Chưa đủ điều kiện trả tiền"
           }
           disabled={!canPayout}
-          className={`p-1.5 rounded-md transition ${
+          className={`py-1.5 px-2 rounded-md transition ${
             canPayout
-              ? "text-orange-500 hover:text-orange-700 hover:bg-orange-50 bg-orange-100 cursor-pointer"
-              : "text-gray-300 cursor-not-allowed"
+              ? "text-orange-700 hover:text-orange-700 hover:bg-orange-200 bg-orange-100 cursor-pointer"
+              : "text-gray-300 bg-gray-100 cursor-not-allowed"
           }`}
         >
           <Banknote size={20} />

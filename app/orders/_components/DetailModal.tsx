@@ -25,7 +25,14 @@ import {
   Package,
   Wallet,
   XCircle,
+  CheckCircle2,
+  Clock,
+  Store,
+  Loader2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { VendorType } from "@/utils/VendorType";
+import { VendorService } from "@/hooks/vendor.service";
 
 type Props = {
   open: boolean;
@@ -34,34 +41,169 @@ type Props = {
   onPayout: (orderId: string) => void;
 };
 
+const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className="flex justify-between items-center px-4 py-2.5">
+    <span className="text-gray-500 shrink-0 text-sm">{label}</span>
+    <span className="text-gray-800 font-medium text-sm text-right">
+      {value}
+    </span>
+  </div>
+);
+
 const DetailModal = ({ open, onOpenChange, order, onPayout }: Props) => {
+  const [vendor, setVendor] = useState<VendorType | null>(null);
+  const [isFetchingVendor, setIsFetchingVendor] = useState(false);
+
   const statusConfig = getOrderStatusConfig(order.status);
   const canPayout = order.status === "COMPLETED" && !order.paidOut;
+
+  // Lấy vendorId từ shipment đầu tiên
+  const primaryVendorId = order.shipments?.[0]?.vendorId ?? null;
+
+  useEffect(() => {
+    if (!open || !primaryVendorId) {
+      setVendor(null);
+      return;
+    }
+    setIsFetchingVendor(true);
+    VendorService.getById(primaryVendorId)
+      .then(setVendor)
+      .catch(() => setVendor(null))
+      .finally(() => setIsFetchingVendor(false));
+  }, [open, primaryVendorId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-2xl p-0 rounded-2xl max-h-[90vh] overflow-hidden border-0 shadow-2xl">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-orange-500 to-orange-600">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-xl font-bold text-white">
-                Đơn hàng #{order.orderNumber}
-              </DialogTitle>
-              <p className="text-orange-100 text-sm mt-1">
-                {formatLocalDateTime(order.createdAt)}
-              </p>
-            </div>
+            <DialogTitle className="text-xl font-semibold text-orange-700">
+              Đơn hàng #{order.orderNumber}
+            </DialogTitle>
             <span
-              className={`px-4 py-1.5 mr-2 rounded-full text-sm font-semibold shadow-sm ${statusConfig.bgColor} ${statusConfig.textColor}`}
+              className={`px-3 py-1 mr-2 rounded-full text-xs font-semibold ${statusConfig.bgColor} ${statusConfig.textColor}`}
             >
               {statusConfig.label}
             </span>
           </div>
+          <p className="text-sm text-gray-400 mt-1">
+            {formatLocalDateTime(order.createdAt)}
+          </p>
         </DialogHeader>
 
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-200px)] px-6 py-5 space-y-5">
+          {/* Thông tin nhà cung cấp */}
+          <div>
+            <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <Store size={15} className="text-orange-500" />
+              Thông tin nhà cung cấp
+            </h4>
+
+            {isFetchingVendor ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-gray-400">
+                <Loader2 size={16} className="animate-spin" />
+                <span>Đang tải...</span>
+              </div>
+            ) : vendor ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                    <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-orange-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500">Tên nhà cung cấp</p>
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {vendor.businessName}
+                      </p>
+                    </div>
+                  </div>
+                  {vendor.phoneNumber && (
+                    <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                      <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-500">Số điện thoại</p>
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {vendor.phoneNumber}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm sm:col-span-2">
+                    <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500">Địa chỉ giao hàng</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {order.shippingAddress}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                  <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-500">Họ tên</p>
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {vendor.businessName}
+                    </p>
+                  </div>
+                </div>
+                {vendor.phoneNumber && (
+                  <Row
+                    label="Số điện thoại"
+                    value={
+                      <span className="flex items-center gap-1">
+                        <Phone size={13} className="text-gray-400" />
+                        {vendor.phoneNumber}
+                      </span>
+                    }
+                  />
+                )}
+                {vendor.address && (
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm sm:col-span-2">
+                    <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500">Địa chỉ</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {vendor.address}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <Row
+                  label="Đã thanh toán cho NCC"
+                  value={
+                    order.paidOut ? (
+                      <span className="flex items-center gap-1 text-green-600">
+                        <CheckCircle2 size={14} /> Đã trả
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-red-600">
+                        <XCircle size={14} /> Chưa trả
+                      </span>
+                    )
+                  }
+                />
+              </>
+            ) : (
+              <div className="px-4 py-3 text-gray-400 text-sm">
+                {primaryVendorId
+                  ? "Không thể tải thông tin nhà cung cấp"
+                  : "Không có thông tin nhà cung cấp"}
+              </div>
+            )}
+          </div>
+
           {/* Thông tin khách hàng */}
           <div className="bg-gray-50 rounded-xl p-4">
             <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">

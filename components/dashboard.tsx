@@ -31,7 +31,10 @@ export function Dashboard() {
         <div className="grid grid-cols-3 gap-6 mt-6">
           {/* Left Column - Revenue Chart */}
           <div className="col-span-2">
-            <RevenueChart data={dashboard?.grossMonthlyOfYear ?? []} />
+            <RevenueChart
+              data={dashboard?.grossMonthlyOfYear ?? []}
+              dashboard={dashboard}
+            />
           </div>
 
           {/* Coach Ranking */}
