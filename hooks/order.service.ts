@@ -190,7 +190,7 @@ export const OrderService = {
 
   async getMyReturn(): Promise<ApiResponse<any>> {
     try {
-      const res = await api.get('/order-returns');
+      const res = await api.get('/order-returns/vendor/my-returns');
 
       return res.data;
     } catch (e: any) {
