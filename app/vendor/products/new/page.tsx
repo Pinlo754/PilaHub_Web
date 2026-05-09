@@ -111,6 +111,7 @@ export default function ProductFormPage() {
     const [categories, setCategories] = useState<any[]>([])
     const [provinces, setProvinces] = useState<any[]>([])
 
+
     const handleCategoryTypeChange = async (event: any) => {
         const categoryType = event.target.value;
         setSelectedType(categoryType);
@@ -130,7 +131,7 @@ export default function ProductFormPage() {
 
                 case "supplement": {
                     const res = await SupplementService.getAll();
-                    newRefs = res.data.map((item) => ({
+                    newRefs = res.map((item) => ({
                         id: item.supplementId,
                         name: item.name,
                     }));
@@ -164,7 +165,7 @@ export default function ProductFormPage() {
 
                     case "SUPPLEMENT": {
                         const res = await SupplementService.getAll();
-                        newRefs = res.data.map((item) => ({
+                        newRefs = res.map((item) => ({
                             id: item.supplementId,
                             name: item.name,
                         }));
@@ -510,7 +511,7 @@ export default function ProductFormPage() {
 
                                 {/* Category Type */}
                                 <div className="form-group">
-                                    <label className="label">Loại danh mục</label>
+                                    <label className="label">Loại sản phẩm</label>
                                     <select
                                         name="categoryType"
                                         value={formData.categoryType}
@@ -631,20 +632,22 @@ export default function ProductFormPage() {
                                 </div>
 
                                 {/* Expired Date */}
-                                <div className="form-group">
-                                    <label className="label">Ngày hết hạn (Expired Date)</label>
-                                    <input
-                                        type="date"
-                                        name="expiredDate"
-                                        value={formData.expiredDate}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur}
-                                        className={`input ${errors.expiredDate ? 'border-red-500 bg-red-50' : ''}`}
-                                    />
-                                    {errors.expiredDate && (
-                                        <span className="text-red-500 text-xs mt-1">{errors.expiredDate}</span>
-                                    )}
-                                </div>
+                                {selectedType === 'SUPPLEMENT' && (
+                                    <div className="form-group">
+                                        <label className="label">Ngày hết hạn</label>
+                                        <input
+                                            type="date"
+                                            name="expiredDate"
+                                            value={formData.expiredDate}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            className={`input ${errors.expiredDate ? 'border-red-500 bg-red-50' : ''}`}
+                                        />
+                                        {errors.expiredDate && (
+                                            <span className="text-red-500 text-xs mt-1">{errors.expiredDate}</span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Description */}
@@ -718,7 +721,6 @@ export default function ProductFormPage() {
                                                 value={formData.height}
                                                 onChange={handleChange}
                                                 className="input has-unit"
-                                                placeholder="Height"
                                             />
                                             <span className="unit">cm</span>
                                         </div>
@@ -733,7 +735,6 @@ export default function ProductFormPage() {
                                                 value={formData.width}
                                                 onChange={handleChange}
                                                 className="input has-unit"
-                                                placeholder="Width"
                                             />
                                             <span className="unit">cm</span>
                                         </div>
@@ -748,7 +749,6 @@ export default function ProductFormPage() {
                                                 value={formData.length}
                                                 onChange={handleChange}
                                                 className="input has-unit"
-                                                placeholder="Length"
                                             />
                                             <span className="unit">cm</span>
                                         </div>
@@ -763,7 +763,6 @@ export default function ProductFormPage() {
                                                 value={formData.weight}
                                                 onChange={handleChange}
                                                 className="input has-unit"
-                                                placeholder="Weight"
                                             />
                                             <span className="unit">g</span>
                                         </div>
@@ -772,13 +771,13 @@ export default function ProductFormPage() {
                             </div>
 
                             <div className="card">
-                                <h2 className="text-lg font-semibold">Thông số kỹ thuật</h2>
+                                <h2 className="text-lg font-semibold">Đặc tính sản phẩm</h2>
                                 <textarea
                                     name="specifications"
                                     value={formData.specifications}
                                     onChange={handleChange}
                                     className="input mt-4 h-28.75"
-                                    placeholder="Ví dụ: 180cm x 60cm, 6mm thickness"
+                                    placeholder="Đặc điểm, tính chất"
                                 />
                             </div>
                         </div>
