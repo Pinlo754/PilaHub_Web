@@ -7,7 +7,7 @@ import { Banknote, CheckCircle2, XCircle } from "lucide-react";
 type Props = {
   order: OrderType;
   onPressOrder: (order: OrderType) => void;
-  onPayout: (orderId: string) => void;
+  onPayout: (orderId: string, orderNumber: string) => void; // ← thêm orderNumber
   index: number;
 };
 
@@ -52,7 +52,9 @@ const OrderRow = ({ order, onPressOrder, onPayout, index }: Props) => {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          onClick={() => canPayout && onPayout(order.orderId)}
+          onClick={() =>
+            canPayout && onPayout(order.orderId, order.orderNumber)
+          } // ← thêm orderNumber
           title={
             canPayout
               ? "Trả tiền nhà cung cấp"

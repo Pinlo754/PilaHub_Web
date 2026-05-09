@@ -4,7 +4,7 @@ import OrderRow from "./OrderRow";
 type Props = {
   orders: OrderType[];
   onPressOrder: (order: OrderType) => void;
-  onPayout: (orderId: string) => void;
+  onPayout: (orderId: string, orderNumber: string) => void;
   pageOffset: number;
 };
 
