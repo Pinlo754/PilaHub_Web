@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { OrderService } from "@/hooks/order.service";
-import { OrderType, ORDER_STATUS } from "@/utils/OrderType";
+import { OrderType, ORDER_STATUS, SHIPMENT_STATUS } from "@/utils/OrderType";
 import { useToast } from "@/hooks/useToast";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -44,9 +44,9 @@ export const useGHNSimulator = () => {
       onConfirm: async () => {
         setIsLoading(true);
         try {
-          await OrderService.updateOrderStatus(
-            order.orderId,
-            ORDER_STATUS.DELIVERED,
+          await OrderService.updateShipmentStatus(
+            order.shipments[0].shipmentId,
+            SHIPMENT_STATUS.DELIVERED
           );
           showSuccess(`Đơn hàng #${order.orderNumber} đã được giao thành công`);
           setShowDetailModal(false);

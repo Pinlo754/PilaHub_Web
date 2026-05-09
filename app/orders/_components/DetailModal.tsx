@@ -100,26 +100,27 @@ const DetailModal = ({ open, onOpenChange, order, onPayout }: Props) => {
               <Store size={15} className="text-orange-500" />
               Thông tin nhà cung cấp
             </h4>
-            <div className="border rounded-xl divide-y divide-gray-100">
-              {isFetchingVendor ? (
-                <div className="flex items-center justify-center py-6 gap-2 text-gray-400">
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Đang tải...</span>
-                </div>
-              ) : vendor ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
-                      <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                        <User className="w-4 h-4 text-orange-600" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs text-gray-500">Họ tên</p>
-                        <p className="text-sm font-medium text-gray-800 truncate">
-                          {order.recipientName}
-                        </p>
-                      </div>
+
+            {isFetchingVendor ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-gray-400">
+                <Loader2 size={16} className="animate-spin" />
+                <span>Đang tải...</span>
+              </div>
+            ) : vendor ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                    <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-orange-600" />
                     </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500">Tên nhà cung cấp</p>
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {vendor.businessName}
+                      </p>
+                    </div>
+                  </div>
+                  {vendor.phoneNumber && (
                     <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
                       <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                         <Phone className="w-4 h-4 text-blue-600" />
@@ -127,82 +128,80 @@ const DetailModal = ({ open, onOpenChange, order, onPayout }: Props) => {
                       <div className="min-w-0">
                         <p className="text-xs text-gray-500">Số điện thoại</p>
                         <p className="text-sm font-medium text-gray-800 truncate">
-                          {order.recipientPhone}
+                          {vendor.phoneNumber}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm sm:col-span-2">
-                      <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-500">
-                          Địa chỉ giao hàng
-                        </p>
-                        <p className="text-sm font-medium text-gray-800">
-                          {order.shippingAddress}
-                        </p>
-                      </div>
+                  )}
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm sm:col-span-2">
+                    <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-green-600" />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
-                    <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                      <User className="w-4 h-4 text-orange-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500">Họ tên</p>
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {vendor.businessName}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500">Địa chỉ giao hàng</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {order.shippingAddress}
                       </p>
                     </div>
                   </div>
-                  {vendor.phoneNumber && (
-                    <Row
-                      label="Số điện thoại"
-                      value={
-                        <span className="flex items-center gap-1">
-                          <Phone size={13} className="text-gray-400" />
-                          {vendor.phoneNumber}
-                        </span>
-                      }
-                    />
-                  )}
-                  {vendor.address && (
-                    <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm sm:col-span-2">
-                      <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-500">Địa chỉ</p>
-                        <p className="text-sm font-medium text-gray-800">
-                          {vendor.address}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                </div>
+                <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                  <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-500">Họ tên</p>
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {vendor.businessName}
+                    </p>
+                  </div>
+                </div>
+                {vendor.phoneNumber && (
                   <Row
-                    label="Đã thanh toán cho NCC"
+                    label="Số điện thoại"
                     value={
-                      order.paidOut ? (
-                        <span className="flex items-center gap-1 text-green-600">
-                          <CheckCircle2 size={14} /> Đã trả
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-red-600">
-                          <XCircle size={14} /> Chưa trả
-                        </span>
-                      )
+                      <span className="flex items-center gap-1">
+                        <Phone size={13} className="text-gray-400" />
+                        {vendor.phoneNumber}
+                      </span>
                     }
                   />
-                </>
-              ) : (
-                <div className="px-4 py-3 text-gray-400 text-sm">
-                  {primaryVendorId
-                    ? "Không thể tải thông tin nhà cung cấp"
-                    : "Không có thông tin nhà cung cấp"}
-                </div>
-              )}
-            </div>
+                )}
+                {vendor.address && (
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm sm:col-span-2">
+                    <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500">Địa chỉ</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {vendor.address}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <Row
+                  label="Đã thanh toán cho NCC"
+                  value={
+                    order.paidOut ? (
+                      <span className="flex items-center gap-1 text-green-600">
+                        <CheckCircle2 size={14} /> Đã trả
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-red-600">
+                        <XCircle size={14} /> Chưa trả
+                      </span>
+                    )
+                  }
+                />
+              </>
+            ) : (
+              <div className="px-4 py-3 text-gray-400 text-sm">
+                {primaryVendorId
+                  ? "Không thể tải thông tin nhà cung cấp"
+                  : "Không có thông tin nhà cung cấp"}
+              </div>
+            )}
           </div>
 
           {/* Thông tin khách hàng */}

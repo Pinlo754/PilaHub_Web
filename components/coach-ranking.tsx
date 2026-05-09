@@ -45,7 +45,7 @@ export function CoachRanking({ coaches }: Props) {
               <Badge
                 className={`${BADGE_COLORS[index % 2]} text-gray-700 text-xs`}
               >
-                {coach.avgRating.toFixed(1)}
+                {(coach.avgRating ?? 0).toFixed(1)}
               </Badge>
             </div>
           );

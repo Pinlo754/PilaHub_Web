@@ -29,6 +29,7 @@ import {
   Target,
   Leaf,
   RotateCw,
+  FileCheck2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -53,6 +54,7 @@ const iconMap = {
   orders: Package,
   ghn: Truck,
   videocall: Video,
+  assessmentCriteria: FileCheck2,
   reports: Flag,
   reportReasons: MessageSquareWarning,
   returnReasons: RotateCw,

@@ -35,6 +35,7 @@ import {
   Target,
   Leaf,
   RotateCw,
+  ListChecks,
 } from "lucide-react";
 import { logout } from "@/hooks/auth.service";
 import { useRouter } from "next/navigation";
@@ -124,6 +125,11 @@ const menuItems = [
     href: "/videocall",
   },
   {
+    icon: ListChecks,
+    label: "Tiêu chí đánh giá",
+    href: "/assessment-criteria",
+  },
+  {
     icon: Flag,
     label: "Báo cáo",
     href: "/reports",
@@ -184,6 +190,7 @@ export function Sidebar() {
     }
     return false;
   });
+  const [mounted, setMounted] = useState(false);
 
   const handleLogout = async () => {
     const res = await logout();
@@ -205,6 +212,21 @@ export function Sidebar() {
       });
     }
   }, [pathname]);
+
+  useEffect(() => {
+  const saved = localStorage.getItem("sidebar-expanded");
+  setExpanded(saved === "true");
+  setMounted(true);
+}, []);
+
+useEffect(() => {
+  if (mounted) {
+    localStorage.setItem("sidebar-expanded", String(expanded));
+  }
+}, [expanded, mounted]);
+
+// Tránh hydration mismatch
+if (!mounted) return null;
 
   return (
     <aside

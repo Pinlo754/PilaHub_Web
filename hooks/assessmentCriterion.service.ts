@@ -72,6 +72,9 @@ export const AssessmentCriterionService = {
     assessmentCriterionId: string,
     payload: UpdateAssessmentCriterionReq,
   ): Promise<AssessmentCriterionType> => {
+
+    console.log('payload', payload);
+
     const res = await api.put<ApiResponse<AssessmentCriterionType>>(
       `/assessment-criteria/${assessmentCriterionId}`,
       payload,
