@@ -1,64 +1,67 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { OrderStatusType, OrderType } from "@/utils/OrderType";
 import { OrderService } from "@/hooks/order.service";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
 
 const ORDER_PAGE_SIZE = 12;
 const DEBOUNCE_MS = 500;
 
 export const useOrders = () => {
-  // STATE
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [statusFilter, setStatusFilter] = useState<OrderStatusType | "ALL">(
     "ALL",
   );
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // API
-  const fetchAll = async () => {
+  const { toasts, removeToast, showSuccess, showError } = useToast();
+  const { confirmState, isConfirmOpen, confirm, closeConfirm } = useConfirm();
+
+  // ---- API ----
+  const fetchAll = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await OrderService.getAll();
       setOrders(res);
     } catch (err: any) {
-      if (err?.type === "BUSINESS_ERROR") {
-        setErrorMsg(err.message);
-      } else {
-        setErrorMsg("Có lỗi xảy ra");
-      }
+      showError(err?.message ?? "Có lỗi xảy ra khi tải đơn hàng");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handlePayout = async (orderId: string) => {
-    setIsLoading(true);
-    try {
-      await OrderService.payoutForVendor(orderId);
+  const handlePayout = useCallback(
+    (orderId: string, orderNumber: string) => {
+      confirm({
+        title: "Xác nhận trả tiền nhà cung cấp?",
+        description: `Bạn sắp thực hiện thanh toán cho đơn hàng #${orderNumber}. Hành động này không thể hoàn tác.`,
+        confirmLabel: "Xác nhận trả tiền",
+        variant: "info",
+        onConfirm: async () => {
+          setIsLoading(true);
+          try {
+            await OrderService.payoutForVendor(orderId);
+            handleCloseModal();
+            await fetchAll();
+            setCurrentPage(0);
+            showSuccess("Đã trả tiền nhà cung cấp thành công");
+          } catch (err: any) {
+            showError(err?.message ?? "Có lỗi xảy ra khi trả tiền");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+      });
+    },
+    [fetchAll],
+  );
 
-      if (isModalOpen) {
-        handleCloseModal();
-      }
-
-      await fetchAll();
-      setCurrentPage(0);
-    } catch (err: any) {
-      if (err?.type === "BUSINESS_ERROR") {
-        setErrorMsg(err.message);
-      } else {
-        setErrorMsg("Có lỗi xảy ra");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // HANDLERS
+  // ---- HANDLERS ----
   const handleOpenModal = (order: OrderType) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
@@ -84,7 +87,7 @@ export const useOrders = () => {
     setCurrentPage(0);
   };
 
-  // DERIVED — filter + paginate client-side
+  // ---- DERIVED ----
   const filteredOrders = orders.filter((o) => {
     const matchSearch =
       o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,12 +100,12 @@ export const useOrders = () => {
     1,
     Math.ceil(filteredOrders.length / ORDER_PAGE_SIZE),
   );
+  const safePage = Math.min(currentPage, totalPages - 1);
   const pagedOrders = filteredOrders.slice(
-    currentPage * ORDER_PAGE_SIZE,
-    (currentPage + 1) * ORDER_PAGE_SIZE,
+    safePage * ORDER_PAGE_SIZE,
+    (safePage + 1) * ORDER_PAGE_SIZE,
   );
 
-  // USE EFFECT
   useEffect(() => {
     fetchAll();
     return () => {
@@ -110,18 +113,12 @@ export const useOrders = () => {
     };
   }, []);
 
-  // Reset về page 0 khi search thay đổi
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [searchTerm]);
-
   return {
     pagedOrders,
-    currentPage,
+    currentPage: safePage,
     totalPages,
     setCurrentPage,
     isLoading,
-    errorMsg,
     searchTerm,
     setSearchTerm: handleSearchChange,
     statusFilter,
@@ -131,5 +128,10 @@ export const useOrders = () => {
     handleOpenModal,
     handleCloseModal,
     handlePayout,
+    toasts,
+    removeToast,
+    confirmState,
+    isConfirmOpen,
+    closeConfirm,
   };
 };
